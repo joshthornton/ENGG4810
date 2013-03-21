@@ -70,11 +70,6 @@ void InitLED(void)
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_1);
 }
 
-void InitCS(void)
-{
-	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, GPIO_PIN_2 );
-}
 
 void InitSSI(void)
 {
