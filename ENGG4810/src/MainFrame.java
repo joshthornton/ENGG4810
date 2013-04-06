@@ -1,5 +1,5 @@
-import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -26,6 +26,7 @@ public class MainFrame extends JFrame {
 	private MainFrame that = this;
 	private ButtonPanel buttons;
 	private TrackPanel tracks;
+	private OptionsPanel options;
 	private Configuration config;
 	
 	public static void main(String[] args) {
@@ -38,8 +39,8 @@ public class MainFrame extends JFrame {
 	public MainFrame() {
 		
 		setTitle( "ENGG4810 Group 27" );
-		setBounds( 100, 100, 800, 800 );
-		this.setMinimumSize( new Dimension( 800, 800 ) );
+		setBounds( 100, 100, 1200, 800 );
+		setResizable(false);
 		
 		// Creating menu
 		JMenuBar menu = new JMenuBar();
@@ -174,15 +175,28 @@ public class MainFrame extends JFrame {
 			config.buttons[i] = new ButtonConfiguration();
 		
 		// Initialising panels
-		buttons = new ButtonPanel( config );
-		tracks = new TrackPanel();
+		buttons = new ButtonPanel( config, new RedrawCallback( this ) );
+		tracks = new TrackPanel( new RedrawCallback( this ) );
+		options = new OptionsPanel( new RedrawCallback( this ) );
 		
 		// Creating layout
-		GridLayout gl = new GridLayout( 1, 2 );
+		GridBagLayout gl = new GridBagLayout();
 		this.setLayout( gl );
-		this.add( buttons );
-		this.add( tracks );
 		
+		GridBagConstraints c = new GridBagConstraints();
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridheight = 1;
+		c.gridwidth = 1;
+		this.add( buttons, c );
+		c.gridy = 1;
+		this.add( options, c );
+		c.gridx = 1;
+		c.gridy = 0;
+		c.gridheight = 2;
+		this.add( tracks, c );
+		
+		this.pack();
 	}
 	
 	void redraw() {

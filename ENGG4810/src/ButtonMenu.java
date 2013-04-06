@@ -19,11 +19,13 @@ public class ButtonMenu extends JPopupMenu {
 	ButtonModel[] modeModels;
 	ButtonModel[] trackModels;
 	ButtonModel[] actionModels;
+	private RedrawCallback r;
 	
-	public ButtonMenu( Button button ) {
+	public ButtonMenu( Button button, RedrawCallback r ) {
 		
 		// Save parent button
 		this.button = button;
+		this.r = r;
 		
 		// Add mode submenu
 		JMenu mode = new JMenu( "Mode" );
@@ -44,16 +46,21 @@ public class ButtonMenu extends JPopupMenu {
 		// Add Track submenu
 		JMenu track = new JMenu( "Track" );
 		trackGroup = new ButtonGroup();
-		trackModels = new ButtonModel[Configuration.NUM_BUTTONS];
+		trackModels = new ButtonModel[Configuration.NUM_BUTTONS + 1];
+		JMenuItem t = new JRadioButtonMenuItem( "None" );
+		trackModels[0] = t.getModel();
+		t.addActionListener( new TrackActionListener( -1 ) );
+		trackGroup.add( t );
+		track.add( t );
 		for ( int i = 0; i < Configuration.NUM_BUTTONS; ++i )
 		{
-			JMenuItem t = new JRadioButtonMenuItem( Integer.toString( i ) );
-			trackModels[i] = t.getModel();
+			t = new JRadioButtonMenuItem( Integer.toString( i + 1 ) );
+			trackModels[i+1] = t.getModel();
 			t.addActionListener( new TrackActionListener( i ) );
 			trackGroup.add( t );
 			track.add( t );
 		}
-		trackGroup.setSelected( trackModels[ button.getTrack() ], true);
+		trackGroup.setSelected( trackModels[ button.getTrack() + 1 ], true);
 		this.add( track );
 		
 		// Add action submenu
@@ -76,7 +83,7 @@ public class ButtonMenu extends JPopupMenu {
 	
 	public void redraw() {
 		modeGroup.setSelected( modeModels[ button.getMode().getIndex() ], true);
-		trackGroup.setSelected( trackModels[ button.getTrack() ], true);
+		trackGroup.setSelected( trackModels[ button.getTrack() + 1 ], true);
 		actionGroup.setSelected( actionModels[ button.getAction().getIndex() ], true);
 	}
 	

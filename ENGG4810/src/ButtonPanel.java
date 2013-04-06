@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.awt.GridLayout;
 
 import javax.swing.JPanel;
@@ -9,18 +10,21 @@ public class ButtonPanel extends JPanel {
 	public final static int width = 4;
 	public final static int height = 4;
 	private Button[] buttons;
+	RedrawCallback r;
 	
-	public ButtonPanel( Configuration config )
+	public ButtonPanel( Configuration config, RedrawCallback r )
 	{	
+		this.r = r;
 		// Create Layout
 		GridLayout layout = new GridLayout( width, height );
 		this.setLayout( layout );
+		this.setPreferredSize( new Dimension( 600, 600 ) );
 		
 		// Create Buttons
 		buttons = new Button[width * height];
 		for ( int i = 0; i < width * height; ++i )
 		{
-			buttons[i] = new Button( i, config.buttons[i] );
+			buttons[i] = new Button( i, config.buttons[i], r );
 			this.add( buttons[i] );
 		}
 		

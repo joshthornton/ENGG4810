@@ -2,8 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="/Users/josh/Downloads/google-gson-2.2.2/gson-2.2.2.jar"/>
-	<classpathentry kind="lib" path="/Users/josh/Downloads/google-gson-2.2.2/gson-2.2.2-sources.jar"/>
-	<classpathentry kind="lib" path="/Users/josh/Downloads/google-gson-2.2.2/gson-2.2.2-javadoc.jar"/>
+	<classpathentry kind="lib" path="/Users/josh/Documents/University/2013/ENGG4810/ENGG4810/ENGG4810/google-gson-2.2.2/gson-2.2.2-javadoc.jar"/>
+	<classpathentry kind="lib" path="/Users/josh/Documents/University/2013/ENGG4810/ENGG4810/ENGG4810/google-gson-2.2.2/gson-2.2.2-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/josh/Documents/University/2013/ENGG4810/ENGG4810/ENGG4810/google-gson-2.2.2/gson-2.2.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

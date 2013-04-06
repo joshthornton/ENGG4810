@@ -1,5 +1,5 @@
 
-public enum Effect {
+public enum MPCEffect {
 	
 	NO_EFFECT {
 		public String toString() {

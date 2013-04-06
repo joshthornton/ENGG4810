@@ -1,10 +1,14 @@
 import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 
 public class Button extends JPanel {
@@ -15,60 +19,67 @@ public class Button extends JPanel {
 	private JLabel trackLabel;
 	private JLabel actionLabel;
 	private ButtonMenu contextMenu;
-	
+	private RedrawCallback r;
 
-	public Button( int num, ButtonConfiguration config )
+	public Button( int num, ButtonConfiguration config, RedrawCallback r )
 	{
+		this.r = r;
 		this.config = config;
 		
+		this.setPreferredSize( new Dimension( 200, 200 ) );
+		this.setBackground( Color.WHITE );
+		
 		// Add border
-		this.setBorder( BorderFactory.createLineBorder( Color.BLACK) );
+		this.setBorder( BorderFactory.createLineBorder( Color.BLACK ) );
 		
 		// Create Layout
-		GridBagLayout layout = new GridBagLayout();
-		this.setLayout( layout );
-		GridBagConstraints c = new GridBagConstraints();
+		this.setLayout( new BoxLayout( this, BoxLayout.PAGE_AXIS ) );
+		Box left = Box.createVerticalBox();
+		Box right = Box.createVerticalBox();
+		Box top = Box.createHorizontalBox();
+		Box middle = Box.createHorizontalBox();
+		middle.add( Box.createGlue() );
+		middle.add( left );
+		middle.add( right );
+		middle.add( Box.createGlue() );
+		this.add( top );
+		this.add( middle );
 		
 		// Add number
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.gridheight = 1;
 		JLabel number = new JLabel( Integer.toString(num) );
-		this.add( number, c );
+		number.setFont( new Font( "Serif", Font.BOLD, 30 ) );
+		number.setAlignmentY( Component.LEFT_ALIGNMENT );
+		number.setBorder( new EmptyBorder(4, 4, 4, 4) );
+		top.add( number );
+		top.add( Box.createGlue() );
 		
 		// Add Mode
-		JLabel mode = new JLabel( "Mode: " );
-		c.gridx = 0;
-		c.gridy = 1;
-		this.add( mode, c );
-		modeLabel = new JLabel( config.mode.toString() );
-		c.gridx = 1;
-		c.gridy = 1;
-		this.add( modeLabel, c );
+		JLabel mode = new JLabel( "Mode: ", JLabel.LEFT );
+		left.add( mode );
+		left.add( Box.createGlue() );
+		modeLabel = new JLabel( config.mode.toString(), JLabel.LEFT );
+		right.add( modeLabel );
+		right.add( Box.createGlue() );
 		
 		// Add Track
-		JLabel track = new JLabel( "Track: " );
-		c.gridx = 0;
-		c.gridy = 2;
-		this.add( track, c );
-		trackLabel = new JLabel( Integer.toString( config.track ) );
-		c.gridx = 1;
-		c.gridy = 2;
-		this.add( trackLabel, c );
+		JLabel track = new JLabel( "Track: ", JLabel.LEFT );
+		left.add( track );
+		left.add( Box.createGlue() );
+		String s = ( config.track < 0 ) ? "None" : "Track " + Integer.toString( config.track + 1 );
+		trackLabel = new JLabel( s, JLabel.LEFT );
+		right.add( trackLabel );
+		right.add( Box.createGlue() );
 		
 		// Add Action
-		JLabel action = new JLabel( "Action: " );
-		c.gridx = 0;
-		c.gridy = 3;
-		this.add( action, c );
-		actionLabel = new JLabel( config.action.toString() );
-		c.gridx = 1;
-		c.gridy = 3;
-		this.add( actionLabel, c );
+		JLabel action = new JLabel( "Action: ", JLabel.LEFT );
+		left.add( action );
+		left.add( Box.createGlue() );
+		actionLabel = new JLabel( config.action.toString(), JLabel.LEFT );
+		right.add( actionLabel );
+		right.add( Box.createGlue() );
 		
 		// Add listener for right click
-		contextMenu = new ButtonMenu( this );
+		contextMenu = new ButtonMenu( this, r );
 		this.setComponentPopupMenu( contextMenu );
 		
 	}
@@ -98,7 +109,12 @@ public class Button extends JPanel {
 	public void setTrack( int track )
 	{
 		config.track = track;
-		trackLabel.setText( Integer.toString( config.track ) );
+		if ( config.track < 0 )
+		{
+			trackLabel.setText( "None" );
+		} else {
+			trackLabel.setText( "Track " + Integer.toString( config.track + 1 ) );
+		}
 	}
 	
 	public int getTrack() {
@@ -108,7 +124,12 @@ public class Button extends JPanel {
 	public void redraw() {
 		modeLabel.setText( config.mode.toString() );
 		actionLabel.setText( config.action.toString() );
-		trackLabel.setText( Integer.toString( config.track ) );
+		if ( config.track < 0 )
+		{
+			trackLabel.setText( "None" );
+		} else {
+			trackLabel.setText( "Track " + Integer.toString( config.track + 1 ) );
+		}
 		contextMenu.redraw();
 	}
 	

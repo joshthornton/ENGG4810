@@ -8,11 +8,11 @@ public enum Action {
 	},
 	EFFECT_ONE_TOGGLE(1) {
 		public String toString() {
-			return "Toggle Effect One";
+			return "Effect One";
 		}
 	}, EFFECT_TWO_TOGGLE(2) {
 		public String toString() {
-			return "Toggle Effect Two";
+			return "Effect Two";
 		}
 	};
 	
