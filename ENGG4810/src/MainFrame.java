@@ -39,7 +39,7 @@ public class MainFrame extends JFrame {
 	public MainFrame() {
 		
 		setTitle( "ENGG4810 Group 27" );
-		setBounds( 100, 100, 1200, 800 );
+		setBounds( 100, 100, 1600, 800 );
 		setResizable(false);
 		
 		// Creating menu
@@ -175,9 +175,9 @@ public class MainFrame extends JFrame {
 			config.buttons[i] = new ButtonConfiguration();
 		
 		// Initialising panels
-		buttons = new ButtonPanel( config, new RedrawCallback( this ) );
-		tracks = new TrackPanel( new RedrawCallback( this ) );
-		options = new OptionsPanel( new RedrawCallback( this ) );
+		buttons = new ButtonPanel( config);
+		tracks = new TrackPanel( );
+		options = new OptionsPanel( config );
 		
 		// Creating layout
 		GridBagLayout gl = new GridBagLayout();

@@ -10,21 +10,19 @@ public class ButtonPanel extends JPanel {
 	public final static int width = 4;
 	public final static int height = 4;
 	private Button[] buttons;
-	RedrawCallback r;
 	
-	public ButtonPanel( Configuration config, RedrawCallback r )
+	public ButtonPanel( Configuration config)
 	{	
-		this.r = r;
 		// Create Layout
 		GridLayout layout = new GridLayout( width, height );
 		this.setLayout( layout );
-		this.setPreferredSize( new Dimension( 600, 600 ) );
+		this.setPreferredSize( new Dimension( 1000, 600 ) );
 		
 		// Create Buttons
 		buttons = new Button[width * height];
 		for ( int i = 0; i < width * height; ++i )
 		{
-			buttons[i] = new Button( i, config.buttons[i], r );
+			buttons[i] = new Button( i, config.buttons[i] );
 			this.add( buttons[i] );
 		}
 		

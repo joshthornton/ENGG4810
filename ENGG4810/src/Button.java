@@ -2,10 +2,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -15,18 +18,22 @@ public class Button extends JPanel {
 	
 	private static final long serialVersionUID = -7987211717336865530L;
 	private ButtonConfiguration config;
-	private JLabel modeLabel;
-	private JLabel trackLabel;
-	private JLabel actionLabel;
-	private ButtonMenu contextMenu;
-	private RedrawCallback r;
+	private JComboBox modeLabel;
+	private JComboBox trackLabel;
+	private JComboBox actionLabel;
+	private JComboBox loopLabel;
+	
+	private Mode[] modes;
+	private LoopInterval[] loops;
+	private Action[] actions;
+	private TrackEnum[] tracks;
+	
 
-	public Button( int num, ButtonConfiguration config, RedrawCallback r )
+	public Button( int num, ButtonConfiguration c)
 	{
-		this.r = r;
-		this.config = config;
+		this.config = c;
 		
-		this.setPreferredSize( new Dimension( 200, 200 ) );
+		this.setPreferredSize( new Dimension( 250, 250 ) );
 		this.setBackground( Color.WHITE );
 		
 		// Add border
@@ -53,20 +60,48 @@ public class Button extends JPanel {
 		top.add( number );
 		top.add( Box.createGlue() );
 		
+		// Create option arrays
+		modes = Mode.values();
+		loops = LoopInterval.values();
+		actions = Action.values();
+		tracks = TrackEnum.values();
+		
 		// Add Mode
 		JLabel mode = new JLabel( "Mode: ", JLabel.LEFT );
 		left.add( mode );
 		left.add( Box.createGlue() );
-		modeLabel = new JLabel( config.mode.toString(), JLabel.LEFT );
+		modeLabel = new JComboBox( enumToString( modes ) );
+		modeLabel.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				config.mode = modes[modeLabel.getSelectedIndex()];
+			}
+		});
 		right.add( modeLabel );
+		right.add( Box.createGlue() );
+		
+		// Add Loop
+		JLabel loop = new JLabel( "Loop Int:", JLabel.LEFT );
+		left.add( loop );
+		left.add( Box.createGlue() );
+		loopLabel = new JComboBox( enumToString( loops ) );
+		loopLabel.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				config.loop = loops[loopLabel.getSelectedIndex()];
+			}
+		});
+		right.add( loopLabel );
 		right.add( Box.createGlue() );
 		
 		// Add Track
 		JLabel track = new JLabel( "Track: ", JLabel.LEFT );
 		left.add( track );
 		left.add( Box.createGlue() );
-		String s = ( config.track < 0 ) ? "None" : "Track " + Integer.toString( config.track + 1 );
-		trackLabel = new JLabel( s, JLabel.LEFT );
+		trackLabel = new JComboBox( enumToString( tracks ) );
+		trackLabel.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				config.track = tracks[trackLabel.getSelectedIndex()];
+			}
+		});
 		right.add( trackLabel );
 		right.add( Box.createGlue() );
 		
@@ -74,63 +109,32 @@ public class Button extends JPanel {
 		JLabel action = new JLabel( "Action: ", JLabel.LEFT );
 		left.add( action );
 		left.add( Box.createGlue() );
-		actionLabel = new JLabel( config.action.toString(), JLabel.LEFT );
+		actionLabel = new JComboBox( enumToString( actions ) );
+		actionLabel.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				config.action = actions[actionLabel.getSelectedIndex()];
+			}
+		});
 		right.add( actionLabel );
 		right.add( Box.createGlue() );
 		
-		// Add listener for right click
-		contextMenu = new ButtonMenu( this, r );
-		this.setComponentPopupMenu( contextMenu );
+		redraw();
 		
 	}
 	
-	public void setMode( Mode mode )
-	{
-		config.mode = mode;
-		modeLabel.setText( config.mode.toString() );
-	}
-	
-	public Mode getMode()
-	{
-		return config.mode;
-	}
-	
-	public void setAction( Action action )
-	{
-		config.action = action;
-		actionLabel.setText( config.action.toString() );
-	}
-	
-	public Action getAction()
-	{
-		return config.action;
-	}
-	
-	public void setTrack( int track )
-	{
-		config.track = track;
-		if ( config.track < 0 )
-		{
-			trackLabel.setText( "None" );
-		} else {
-			trackLabel.setText( "Track " + Integer.toString( config.track + 1 ) );
+	private static <T> String[] enumToString( T[] arr ) {
+		String[] s = new String[ arr.length ];
+		for ( int i = 0; i < arr.length; i++ ) {
+			s[i] = arr[i].toString();
 		}
-	}
-	
-	public int getTrack() {
-		return config.track;
+		return s;
 	}
 	
 	public void redraw() {
-		modeLabel.setText( config.mode.toString() );
-		actionLabel.setText( config.action.toString() );
-		if ( config.track < 0 )
-		{
-			trackLabel.setText( "None" );
-		} else {
-			trackLabel.setText( "Track " + Integer.toString( config.track + 1 ) );
-		}
-		contextMenu.redraw();
+		modeLabel.setSelectedIndex( config.mode.getIndex() );
+		loopLabel.setSelectedIndex( config.loop.getIndex() );
+		trackLabel.setSelectedIndex( config.track.getIndex() );
+		actionLabel.setSelectedIndex( config.action.getIndex() );
 	}
 	
 	public void updateConfig( ButtonConfiguration config ) {

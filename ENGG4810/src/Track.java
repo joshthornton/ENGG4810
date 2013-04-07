@@ -4,34 +4,22 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 
 
-public class Track extends JPanel implements MouseListener {
+public class Track extends JPanel {
 
 	private static final long serialVersionUID = -7862960515614918660L;
-	private RedrawCallback r;
-	private Clip clip;
 	private TrackMenu contextMenu;
 	private Waveform canvas;
-	private int frameLength;
-	private int numChannels;
-	private int frameSize;
-	private byte[] bytes;
+	Sample sample;
 	
-	public Track( RedrawCallback r ) {
+	public Track() {
 		
-		this.r = r;
 		this.setPreferredSize( new Dimension( 600, 50 ) );
 		this.setBorder( BorderFactory.createLineBorder( Color.BLACK ) );
 		contextMenu = new TrackMenu( this );
@@ -48,85 +36,51 @@ public class Track extends JPanel implements MouseListener {
 		this.add( buttons, BorderLayout.LINE_START );
 		this.add( canvas, BorderLayout.LINE_END );
 		
-		// Add play/pause and loop buttons
+		// Add play/pause and back buttons
 		JButton playPause = new IconButton( "resources/playpause.png" );
-		final JToggleButton loop = new IconToggleButton( "resources/loop.png" );
+		JButton back = new IconButton( "resources/back.png" );
 		playPause.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if ( clip.isActive() )
-					clip.stop();
-				else
-					clip.start();
+				sample.playPause();
+				canvas.setPlayhead( sample.playhead() );
+				canvas.repaint();
+				canvas.repaint();
 			} 	
 		});
-		loop.addActionListener( new ActionListener() {
+		back.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if ( loop.isSelected() )
-					clip.loop( 0 );
-				else 
-					clip.loop( Clip.LOOP_CONTINUOUSLY );
+				sample.back();
+				canvas.setPlayhead( sample.playhead() );
+				canvas.repaint();
 			} 	
 		});
 		
 		buttons.add( playPause );
-		buttons.add( loop );
+		buttons.add( back );
 		
 	}
 	
-	public void load( File file ) throws InvalidFileException {
-		AudioInputStream audio;
-		try {
-			audio = AudioSystem.getAudioInputStream( file );
-			frameLength = (int) audio.getFrameLength();
-			numChannels = audio.getFormat().getChannels();
-			frameSize = (int) audio.getFormat().getFrameSize();
-			bytes = new byte[frameLength * frameSize];
-			int temp = 0;
-			try {
-				temp = audio.read( bytes );
-			} catch ( Exception e ) {
-				e.printStackTrace();
-			}
-			System.out.println( "temp: " + temp );
-			canvas.load( bytes, numChannels, frameLength, frameSize );
-			clip = AudioSystem.getClip();
-			clip.open(audio.getFormat(), bytes, 0, frameLength * frameSize);
-		} catch ( Exception e ) {
-			throw new InvalidFileException( e );
-		}
+	public void loadWav( File file ) throws InvalidFileException {
+		sample = new Sample( file, Sample.SampleType.WAV );
+		canvas.load( sample.getSampleArray() );
 		canvas.repaint();
 	}
 	
-	public void draw() {
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		contextMenu.show( this, e.getX(), e.getY() );
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mousePressed(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
+	public void loadMP3( File file ) throws InvalidFileException {
+		sample = new Sample( file, Sample.SampleType.MP3 );
+		canvas.load( sample.getSampleArray() );
+		canvas.repaint();
 	}
 	
+	public void cutLeft() {
+		sample.cutLeft();
+		canvas.load( sample.getSampleArray() );
+		canvas.repaint();
+	}
+	
+	public void cutRight() {
+		sample.cutRight();
+		canvas.load( sample.getSampleArray() );
+		canvas.repaint();
+	}	
 }
