@@ -2,10 +2,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
@@ -106,6 +110,96 @@ public class TrackMenu extends JPopupMenu {
 		cutRight.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				track.cutRight();
+			}
+		});
+		delay.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JTextField delay = new JTextField( "500" );
+				JSlider amount = new JSlider( 0, 1000 );
+				amount.setValue( 700 );
+				final JComponent[] inputs = new JComponent[] {
+						new JLabel("Delay (ms):"),
+						delay,
+						new JLabel("Amount (0.0-1.0):"),
+						amount
+				};
+				if ( JOptionPane.showConfirmDialog(null, inputs, "Delay", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
+					try {
+						track.delay(Integer.parseInt(delay.getText()), amount.getValue() / 1000 );
+					} catch ( Exception ex ) {
+						JOptionPane.showMessageDialog(track,
+							    ex.getMessage(),
+							    "Could not parse value",
+							    JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+		echo.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JTextField echo = new JTextField( "500" );
+				JSlider amount = new JSlider( 0, 1000 );
+				amount.setValue( 700 );
+				final JComponent[] inputs = new JComponent[] {
+						new JLabel("Delay (ms):"),
+						echo,
+						new JLabel("Amount (0.0-1.0):"),
+						amount
+				};
+				if ( JOptionPane.showConfirmDialog(null, inputs, "Echo", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
+					try {
+						track.echo(Integer.parseInt(echo.getText()), amount.getValue() / 1000 );
+					} catch ( Exception ex ) {
+						JOptionPane.showMessageDialog(track,
+							    ex.getMessage(),
+							    "Could not parse value",
+							    JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+		decimatorBitcrusher.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JSlider bitcrusher = new JSlider(0, 8 );
+				bitcrusher.setValue(0);
+				JSlider decimator = new JSlider( 0, 30 );
+				decimator.setValue(0);
+				final JComponent[] inputs = new JComponent[] {
+						new JLabel("Num bits to crush (0-8):"),
+						bitcrusher,
+						new JLabel("Num samples to decimate (0-30):"),
+						decimator
+				};
+				if ( JOptionPane.showConfirmDialog(null, inputs, "Decimator / Bitcrusher", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
+					try {
+						track.bitcrusherDecimator( bitcrusher.getValue(), decimator.getValue() );
+					} catch ( Exception ex ) {
+						JOptionPane.showMessageDialog(track,
+							    ex.getMessage(),
+							    "Could not parse value",
+							    JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+		playbackSpeed.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JSlider shift = new JSlider( -4, 8 );
+				shift.setValue( 0 );
+				final JComponent[] inputs = new JComponent[] {
+						new JLabel("Shift (1/4x - 8x):"),
+						shift
+				};
+				if ( JOptionPane.showConfirmDialog(null, inputs, "Pitch Shift", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
+					try {
+						track.pitchshift( shift.getValue() );
+					} catch ( Exception ex ) {
+						JOptionPane.showMessageDialog(track,
+							    ex.getMessage(),
+							    "Could not parse value",
+							    JOptionPane.ERROR_MESSAGE);
+					}
+				}
 			}
 		});
 		

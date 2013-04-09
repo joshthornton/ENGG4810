@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.InputStream;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -107,7 +106,8 @@ public class Sample {
 		}
 		this.bytes = temp;
 		
-		clip = AudioSystem.getClip();
+		//clip = AudioSystem.getClip();
+		clip = new BigClip();
 		clip.open(format, this.bytes, 0, this.bytes.length );
 	}
 	
@@ -159,6 +159,19 @@ public class Sample {
 		clip.setFramePosition(0);
 	}
 	
+	public void applyEffect( SoftwareEffect effect ) {
+		bytes = effect.apply( bytes );
+		try {
+			clip.flush();
+			clip.close();
+			//clip = AudioSystem.getClip();
+			clip = new BigClip();
+			clip.open(format, bytes, 0, this.bytes.length );
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void cutLeft() {
 		int start = clip.getFramePosition();
 		int end = clip.getFrameLength();
@@ -183,7 +196,10 @@ public class Sample {
 		}
 		bytes = temp;
 		try {
-			clip = AudioSystem.getClip();
+			clip.flush();
+			clip.close();
+			//clip = AudioSystem.getClip();
+			clip = new BigClip();
 			clip.open(format, bytes, 0, this.bytes.length );
 		} catch ( Exception e ) {
 			e.printStackTrace();

@@ -82,5 +82,34 @@ public class Track extends JPanel {
 		sample.cutRight();
 		canvas.load( sample.getSampleArray() );
 		canvas.repaint();
-	}	
+	}
+	
+	public void delay(int ms, double amount ) {
+		sample.applyEffect( new Delay( ms, amount ) );
+		canvas.load( sample.getSampleArray() );
+		canvas.repaint();
+	}
+	
+	public void echo(int ms, double amount ) {
+		sample.applyEffect( new Echo( ms, amount ) );
+		canvas.load( sample.getSampleArray() );
+		canvas.repaint();
+	}
+	
+	public void bitcrusherDecimator(int bitcrusher, int decimator ) {
+		if ( bitcrusher > 0 )
+			sample.applyEffect( new BitCrusher( bitcrusher ) );
+		if ( decimator > 0 )
+			sample.applyEffect( new Decimator( decimator ) );
+		canvas.load( sample.getSampleArray() );
+		canvas.repaint();
+	}
+	
+	public void pitchshift(int factor ) {
+		if ( factor != 0 )
+			sample.applyEffect( new PitchShift( factor ) );
+		canvas.load( sample.getSampleArray() );
+		canvas.repaint();
+	}
+	
 }
