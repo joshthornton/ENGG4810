@@ -19,14 +19,14 @@ public class Button extends JPanel {
 	private static final long serialVersionUID = -7987211717336865530L;
 	private ButtonConfiguration config;
 	private JComboBox modeLabel;
-	private JComboBox trackLabel;
+	//private JComboBox trackLabel;
 	private JComboBox actionLabel;
 	private JComboBox loopLabel;
 	
 	private Mode[] modes;
 	private LoopInterval[] loops;
 	private Action[] actions;
-	private TrackEnum[] tracks;
+	//private TrackEnum[] tracks;
 	
 
 	public Button( int num, ButtonConfiguration c)
@@ -53,7 +53,7 @@ public class Button extends JPanel {
 		this.add( middle );
 		
 		// Add number
-		JLabel number = new JLabel( Integer.toString(num) );
+		JLabel number = new JLabel( "Button " + Integer.toString(num+1) );
 		number.setFont( new Font( "Serif", Font.BOLD, 30 ) );
 		number.setAlignmentY( Component.LEFT_ALIGNMENT );
 		number.setBorder( new EmptyBorder(4, 4, 4, 4) );
@@ -64,7 +64,7 @@ public class Button extends JPanel {
 		modes = Mode.values();
 		loops = LoopInterval.values();
 		actions = Action.values();
-		tracks = TrackEnum.values();
+		//tracks = TrackEnum.values();
 		
 		// Add Mode
 		JLabel mode = new JLabel( "Mode: ", JLabel.LEFT );
@@ -93,17 +93,17 @@ public class Button extends JPanel {
 		right.add( Box.createGlue() );
 		
 		// Add Track
-		JLabel track = new JLabel( "Track: ", JLabel.LEFT );
-		left.add( track );
-		left.add( Box.createGlue() );
-		trackLabel = new JComboBox( enumToString( tracks ) );
-		trackLabel.addActionListener( new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				config.track = tracks[trackLabel.getSelectedIndex()];
-			}
-		});
-		right.add( trackLabel );
-		right.add( Box.createGlue() );
+//		JLabel track = new JLabel( "Track: ", JLabel.LEFT );
+//		left.add( track );
+//		left.add( Box.createGlue() );
+//		trackLabel = new JComboBox( enumToString( tracks ) );
+//		trackLabel.addActionListener( new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				config.track = tracks[trackLabel.getSelectedIndex()];
+//			}
+//		});
+//		right.add( trackLabel );
+//		right.add( Box.createGlue() );
 		
 		// Add Action
 		JLabel action = new JLabel( "Action: ", JLabel.LEFT );
@@ -133,7 +133,7 @@ public class Button extends JPanel {
 	public void redraw() {
 		modeLabel.setSelectedIndex( config.mode.getIndex() );
 		loopLabel.setSelectedIndex( config.loop.getIndex() );
-		trackLabel.setSelectedIndex( config.track.getIndex() );
+		//trackLabel.setSelectedIndex( config.track.getIndex() );
 		actionLabel.setSelectedIndex( config.action.getIndex() );
 	}
 	

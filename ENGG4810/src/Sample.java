@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.InputStream;
 
+import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -16,6 +17,7 @@ public class Sample {
 	private byte[] bytes;
 	private Clip clip;
 	private static final int FRAME_SIZE = 2;
+	private static final String TEMP_FILE = "src/temp/temp.wav";
 	public enum SampleType {
 		WAV,
 		MP3
@@ -60,7 +62,7 @@ public class Sample {
 			frameSize = converter.getFrameSize();
 			bytes = new byte[(int)(frameLength * frameSize)];
 			converter.read( bytes );
-			loadClip( bytes, (int)frameLength, converter.getFormat().getChannels() );
+			loadClip( bytes, (int)frameLength, channels );
 			
 		} catch ( Exception e ) {
 			throw new InvalidFileException( e );
@@ -70,7 +72,6 @@ public class Sample {
 	
 	private void loadMP3( File file ) {
 		AudioInputStream in, din;
-		SampleRateConversionProvider.SampleRateConverterStream converter;
 		try {
 			in = AudioSystem.getAudioInputStream(file);
 			din = null;
@@ -84,45 +85,9 @@ public class Sample {
 				false
 			);
 			din = AudioSystem.getAudioInputStream(decodedFormat, in);
-			
-			bytes = new byte[4096];
-			int off = 0;
-			int num = 0;
-			while ( (num = din.read(bytes, off, bytes.length - off)) > 0 )
-			{ 
-				off += num;
-				if ( off == bytes.length ) {
-					byte[] temp = new byte[bytes.length * 2];
-					System.arraycopy(bytes, 0, temp, 0, bytes.length);
-					bytes = temp;
-				}
-			}
-			
-			// Get actual length
-			int length = num + off;
-			byte[] temp = new byte[length];
-			System.arraycopy(bytes, 0, temp, 0, length);
-			bytes = temp;
-			
-			AudioFormat.Encoding encoding = AudioFormat.Encoding.PCM_SIGNED;
-			float sampleRate = 44100;
-			int sampleSizeInBits = 16;
-			int channels = 2;
-			int frameSize = FRAME_SIZE * channels;
-			float frameRate = sampleRate;
-			boolean bigEndian = false;
-			AudioFormat intermediate = new AudioFormat(encoding, sampleRate, sampleSizeInBits, channels, frameSize, frameRate, bigEndian);
-			
-			MyStream stream = new MyStream( bytes );
-			AudioInputStream s = new AudioInputStream(stream, decodedFormat, length);
-			converter = new SampleRateConversionProvider.SampleRateConverterStream( s, intermediate );
-			
-			// Get bytes
-			long frameLength = converter.getFrameLength();
-			frameSize = converter.getFrameSize();
-			bytes = new byte[(int)(frameLength * frameSize)];
-			converter.read( bytes );
-			loadClip( bytes, (int)converter.getFrameLength(), converter.getFormat().getChannels() );
+			File f = new File(TEMP_FILE);
+			AudioSystem.write(din, AudioFileFormat.Type.WAVE, f);
+			loadWav( f );
 			
 		} catch ( Exception e ) {
 			e.printStackTrace();
@@ -196,7 +161,6 @@ public class Sample {
 	
 	public void cutLeft() {
 		int start = clip.getFramePosition();
-		start = start * FRAME_SIZE;
 		int end = clip.getFrameLength();
 		trim( start, end );
 	}
@@ -204,66 +168,25 @@ public class Sample {
 	public void cutRight() {
 		int start = 0;
 		int end = clip.getFramePosition();
-		end = end * FRAME_SIZE;
 		trim( start, end );
 	}
 	
 	private void trim( int start, int end ) {
-		if ( (end - start) % FRAME_SIZE != 0) {
-			end += (end - start) % FRAME_SIZE;
-		}
+		
+		start *= FRAME_SIZE;
+		end *= FRAME_SIZE;
+		
 		byte[] temp = new byte[end - start];
 		for ( int i = 0; i < end - start; i++ )
 		{
 			temp[i] = bytes[i + start];
 		}
 		bytes = temp;
-		long frameLength = (end - start) / FRAME_SIZE;
 		try {
 			clip = AudioSystem.getClip();
-			clip.open(format, bytes, 0, (int) (frameLength * FRAME_SIZE) );
+			clip.open(format, bytes, 0, this.bytes.length );
 		} catch ( Exception e ) {
 			e.printStackTrace();
 		}
 	}
-	
-	private class MyStream extends InputStream {
-		private byte[] bytes;
-		int pos;
-		
-		public MyStream( byte[] bytes ) {
-			this.bytes = bytes;
-			pos = 0;
-		}
-
-		public int available() {
-			return bytes.length - pos;
-		}
-		
-		public boolean markSupported() {
-			return false;
-		}
-		
-		public int read() {
-			return bytes[pos++];
-		}
-		
-		public int read( byte[] b ) {
-			return read( b, 0, b.length );
-		}
-		
-		public int read( byte[] b, int off, int len ) {
-			len = bytes.length - pos < len ? bytes.length - pos : len;
-			System.arraycopy(bytes, pos, b, off, len );
-			return len;
-		}
-		
-		public long skip( long n ) {
-			n = bytes.length - pos < n ? bytes.length - pos : n;
-			pos += n;
-			return n;
-		}
-		
-	}
-	
 }
