@@ -125,7 +125,7 @@ public class TrackMenu extends JPopupMenu {
 				};
 				if ( JOptionPane.showConfirmDialog(null, inputs, "Delay", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
 					try {
-						track.delay(Integer.parseInt(delay.getText()), amount.getValue() / 1000 );
+						track.delay(Integer.parseInt(delay.getText()), ((double)amount.getValue()) / 1000 );
 					} catch ( Exception ex ) {
 						JOptionPane.showMessageDialog(track,
 							    ex.getMessage(),
@@ -148,7 +148,7 @@ public class TrackMenu extends JPopupMenu {
 				};
 				if ( JOptionPane.showConfirmDialog(null, inputs, "Echo", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
 					try {
-						track.echo(Integer.parseInt(echo.getText()), amount.getValue() / 1000 );
+						track.echo(Integer.parseInt(echo.getText()), ((double)amount.getValue()) / 1000 );
 					} catch ( Exception ex ) {
 						JOptionPane.showMessageDialog(track,
 							    ex.getMessage(),
