@@ -1,7 +1,7 @@
 #ifndef _ENGG4810_BUFFER_H_
 #define _ENGG4810_BUFFER_H_
 
-#define BUFFER_SIZE (4)
+#define BUFFER_SIZE (512)
 
 typedef struct buffer {
 	signed short b[BUFFER_SIZE];
