@@ -1,54 +1,57 @@
 
 public enum MPCEffect {
 	
-	NO_EFFECT {
+	NO_EFFECT(0) {
 		public String toString() {
 			return "No Effect";
 		}
 	},
-	LOWPASS {
+	LOWPASS(1) {
 		public String toString() {
 			return "Low Pass";
 		}
 	},
-	HIGHPASS {
+	HIGHPASS(2) {
 		public String toString() {
 			return "High Pass";
 		}
 	},
-	BANDPASS {
+	BANDPASS(3) {
 		public String toString() {
 			return "Band Pass";
 		}
 	},
-	NOTCH {
+	NOTCH(4) {
 		public String toString() {
 			return "Notch Pass";
 		}
 	},
-	DELAY {
+	DELAY(5) {
 		public String toString() {
 			return "Delay";
 		}
 	},
-	ECHO {
+	ECHO(6) {
 		public String toString() {
 			return "Echo";
 		}
 	},
-	DECIMATOR {
+	DECI_BIT(7) {
 		public String toString() {
-			return "Decimator";
+			return "Decimator / Bitcrusher";
 		}
 	},
-	BITCRUSHER {
-		public String toString() {
-			return "Bitcrusher";
-		}
-	},
-	BITWISE {
+	BITWISE(8) {
 		public String toString() {
 			return "Bitwise Knockout";
 		}
 	};
+	private final int index;
+	private MPCEffect( int index )
+	{
+		this.index = index;
+	}
+	public int getIndex() {
+		return this.index;
+	}
 }

@@ -127,11 +127,19 @@ public class MainFrame extends JFrame {
 				    	}
 				    	
 				    	try {
+				    		
+				    		config.writeStructConfig( selectedFile );
+				    		
+				    		/*
 				    		FileWriter writer = new FileWriter( selectedFile );
 				    		Gson gson = new Gson();
 				    		String test = gson.toJson( config, Configuration.class );
 					    	writer.write( test );
 					    	writer.close();
+					    	*/
+					    	
+					    	
+					    	
 				    	} catch( IOException ex ) {
 				    		throw new InvalidFileException( ex );
 				    	}

@@ -35,4 +35,22 @@ public enum LoopInterval {
 	public int getIndex() {
 		return this.index;
 	}
+	
+	public int getValue() {
+		switch( this )
+		{
+		case TWO:
+			return 2;
+		case FOUR:
+			return 4;
+		case EIGHT:
+			return 8;
+		case SIXTEEN:
+			return 16;
+		case THIRTYTWO:
+			return 32;
+		default:
+			return 1;
+		}
+	}
 }
