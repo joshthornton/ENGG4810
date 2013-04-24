@@ -93,7 +93,6 @@ public class TrackMenu extends JPopupMenu {
 		this.addSeparator();
 		
 		// Effects
-		JMenuItem volumeEnveloping = new JMenuItem( "Volume Enveloping..." );
 		JMenuItem delay = new JMenuItem( "Delay..." );
 		JMenuItem echo = new JMenuItem( "Echo..." );
 		JMenuItem playbackSpeed = new JMenuItem( "Playback Speed..." );
@@ -203,7 +202,6 @@ public class TrackMenu extends JPopupMenu {
 			}
 		});
 		
-		this.add( volumeEnveloping );
 		this.add( delay );
 		this.add( echo );
 		this.add( playbackSpeed );

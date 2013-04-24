@@ -1,41 +1,23 @@
 #include "config.h"
-#include "third_part/fatfs/src/ff.h"
+#include "third_party/fatfs/src/ff.h"
 
 // Constants
-static const char[] configFilePath = "config.engg4810";
-static const char[][] buttonWavPaths = {
-	"b0.dat",
-	"b1.dat",
-	"b2.dat",
-	"b3.dat",
-	"b4.dat",
-	"b5.dat",
-	"b5.dat",
-	"b6.dat",
-	"b7.dat",
-	"b8.dat",
-	"b9.dat",
-	"b10.dat",
-	"b11.dat",
-	"b12.dat",
-	"b13.dat",
-	"b14.dat",
-	"b15.dat",
-};
+static const char *configFilePath = "config.engg4810";
+
+// Force creation of external symbol
+config cfg;
 
 void config_init( config *c )
 {
 
 	FIL fp;
-	FRESULT res;
+	WORD br;
+	int i;
+
+	f_open( &fp, configFilePath, FA_OPEN_EXISTING | FA_READ );
+	f_read( &fp, &cfg, sizeof( cfg ), &br );
 
 	// init each button buffer
-	for ( int i = 0; i < NUM_BUTTONS; ++i )
-		buffer_init( &(c->buttons[i].b) );
-
-	
-
+	for ( i = 0; i < NUM_BUTTONS; ++i )
+		buffer_init( &(c->buttons[i].buf) );
 }
-
-
-

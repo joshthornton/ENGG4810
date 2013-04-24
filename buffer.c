@@ -46,10 +46,3 @@ unsigned long buffer_write( buffer* b, signed short src[], unsigned long maxlen 
 
 	return maxlen;
 }
-
-void buffer_print( buffer *b )
-{ 
-	for( int i = 0; i < b->length; ++i )
-		printf( "b[%d]: %d\n", (int)(( b->start + i ) % BUFFER_SIZE), b->b[ ( b->start + i ) % BUFFER_SIZE ] );
-	printf( "\n" );
-}

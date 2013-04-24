@@ -22,18 +22,15 @@
 #define EFFECT_DECI_BIT		(7)
 #define EFFECT_BITWISE		(8)
 
+#define INTERRUPT_HERTZ		(44100)
+
 typedef struct button {
-
-	// Button config
-	unsigned long mode;
-	unsigned long action;
-	unsigned long loopInterval;
-
-	// Button buffer
-	buffer buf;
-
-	// Button I/O
-	unsigned long fileIndex;
+	unsigned long mode;					// Latch or Hold
+	unsigned long action;				// FN Button Action
+	unsigned long loopInterval;			// User specified loop interval
+	unsigned long playTime;				// playing if playTime >= globalTimer
+	unsigned long interruptModulo;		// Precalculated interrupt modulo
+	FIL *fp;							// File pointer NOTE: not actually file buffer, just pointer (waste of memory)
 } button;
 
 typedef struct config {
@@ -45,6 +42,9 @@ typedef struct config {
 
 
 // Global config variable
-config cfg;
+extern config cfg;
+
+void config_init( config *c );
 
 #endif
+
