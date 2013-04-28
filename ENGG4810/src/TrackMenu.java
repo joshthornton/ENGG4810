@@ -99,6 +99,7 @@ public class TrackMenu extends JPopupMenu {
 		JMenuItem decimatorBitcrusher = new JMenuItem( "Decimator / Bitcrusher..." );
 		JMenuItem cutLeft = new JMenuItem( "Cut Left" );
 		JMenuItem cutRight = new JMenuItem( "Cut Right" );
+		JMenuItem eq = new JMenuItem( "Graphic EQ" );
 		
 		// Add listeners
 		cutLeft.addActionListener( new ActionListener() {
@@ -202,12 +203,70 @@ public class TrackMenu extends JPopupMenu {
 			}
 		});
 		
+		eq.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JSlider h31 = new JSlider( -20, 50 );
+				JSlider h62 = new JSlider( -20, 50 );
+				JSlider h125 = new JSlider( -20, 50 );
+				JSlider h250 = new JSlider( -20, 50 );
+				JSlider h500 = new JSlider( -20, 50 );
+				JSlider h1k = new JSlider( -20, 50 );
+				JSlider h2k = new JSlider( -20, 50 );
+				JSlider h4k = new JSlider( -20, 50 );
+				JSlider h8k = new JSlider( -20, 50 );
+				JSlider h16k = new JSlider( -20, 50 );
+				h31.setValue( 0 );
+				h62.setValue( 0 );
+				h125.setValue( 0 );
+				h250.setValue( 0 );
+				h500.setValue( 0 );
+				h1k.setValue( 0 );
+				h2k.setValue( 0 );
+				h4k.setValue( 0 );
+				h8k.setValue( 0 );
+				h16k.setValue( 0 );
+				final JComponent[] inputs = new JComponent[] {
+						new JLabel("31Hz:"),
+						h31,
+						new JLabel("62Hz:"),
+						h62,
+						new JLabel("125Hz:"),
+						h125,
+						new JLabel("250Hz:"),
+						h250,
+						new JLabel("500Hz:"),
+						h500,
+						new JLabel("1KHz:"),
+						h1k,
+						new JLabel("2KHz:"),
+						h2k,
+						new JLabel("4KHz:"),
+						h4k,
+						new JLabel("8KHz:"),
+						h8k,
+						new JLabel("16KHz:"),
+						h16k
+				};
+				if ( JOptionPane.showConfirmDialog(null, inputs, "Pitch Shift", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
+					try {
+						track.eq( new double[]{ ((double)h31.getValue()) / 100 , ((double)h62.getValue()) / 100 , ((double)h125.getValue()) / 100 , ((double)h250.getValue()) / 100, ((double)h500.getValue()) / 100, ((double)h1k.getValue()) / 100,  ((double)h2k.getValue()) / 100,  ((double)h4k.getValue()) / 100,  ((double)h8k.getValue()) / 100,  ((double)h16k.getValue()) / 100 }  );
+					} catch ( Exception ex ) {
+						JOptionPane.showMessageDialog(track,
+							    ex.getMessage(),
+							    "Could not parse value",
+							    JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
+		
 		this.add( delay );
 		this.add( echo );
 		this.add( playbackSpeed );
 		this.add( decimatorBitcrusher );
 		this.add( cutLeft );
 		this.add( cutRight );
+		this.add( eq );
 		
 	}
 

@@ -79,6 +79,10 @@ public class Track extends JPanel {
 		sample.applyEffect( new Echo( ms, amount ) );
 	}
 	
+	public void eq( double[] gains ) {
+		sample.applyEffect( new EQ( gains ) );
+	}
+	
 	public void bitcrusherDecimator(int bitcrusher, int decimator ) {
 		if ( bitcrusher > 0 )
 			sample.applyEffect( new BitCrusher( bitcrusher ) );

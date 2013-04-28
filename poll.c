@@ -16,23 +16,23 @@ unsigned long buttonState;
 static unsigned long counter;
 
 // LEDs
-static const unsigned long LED_GROUND_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF };
-static const unsigned long LED_GROUND_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE };
-static const unsigned long LED_GROUND_PINS[4] = { GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1 }; 
-static const unsigned long LED_RED_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF };
-static const unsigned long LED_RED_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE };
-static const unsigned long LED_RED_PINS[4] = { GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1 }; 
-static const unsigned long LED_GREEN_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF };
-static const unsigned long LED_GREEN_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE };
-static const unsigned long LED_GREEN_PINS[4] = { GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1 }; 
+static const unsigned long LED_GROUND_PERIPHS[4] = { SYSCTL_PERIPH_GPIOE, SYSCTL_PERIPH_GPIOA, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD };
+static const unsigned long LED_GROUND_BASES[4] = { GPIO_PORTE_BASE, GPIO_PORTA_BASE, GPIO_PORTD_BASE, GPIO_PORTD_BASE };
+static const unsigned long LED_GROUND_PINS[4] = { GPIO_PIN_4, GPIO_PIN_6, GPIO_PIN_2, GPIO_PIN_3 }; 
+static const unsigned long LED_RED_PERIPHS[4] = { SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF };
+static const unsigned long LED_RED_BASES[4] = { GPIO_PORTC_BASE, GPIO_PORTC_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE };
+static const unsigned long LED_RED_PINS[4] = { GPIO_PIN_5, GPIO_PIN_4, GPIO_PIN_4, GPIO_PIN_3 }; 
+static const unsigned long LED_GREEN_PERIPHS[4] = { SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOC };
+static const unsigned long LED_GREEN_BASES[4] = { GPIO_PORTD_BASE, GPIO_PORTD_BASE, GPIO_PORTC_BASE, GPIO_PORTC_BASE };
+static const unsigned long LED_GREEN_PINS[4] = { GPIO_PIN_1, GPIO_PIN_0, GPIO_PIN_7, GPIO_PIN_6 }; 
 
 // Buttons
-static const unsigned long BTN_POWER_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF };
-static const unsigned long BTN_POWER_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE };
-static const unsigned long BTN_POWER_PINS[4] = { GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1 }; 
-static const unsigned long BTN_CHECK_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF };
-static const unsigned long BTN_CHECK_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE };
-static const unsigned long BTN_CHECK_PINS[4] = { GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1, GPIO_PIN_1 }; 
+static const unsigned long BTN_POWER_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOB, SYSCTL_PERIPH_GPIOB };
+static const unsigned long BTN_POWER_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTB_BASE, GPIO_PORTB_BASE };
+static const unsigned long BTN_POWER_PINS[4] = { GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_2, GPIO_PIN_3 }; 
+static const unsigned long BTN_CHECK_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOE, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD };
+static const unsigned long BTN_CHECK_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTE_BASE, GPIO_PORTD_BASE, GPIO_PORTD_BASE };
+static const unsigned long BTN_CHECK_PINS[4] = { GPIO_PIN_0, GPIO_PIN_5, GPIO_PIN_7, GPIO_PIN_6 }; 
 
 // Linear Potentiometers
 static const unsigned long LINEAR_ADC_PERIPHS[4] = {};
@@ -74,11 +74,18 @@ void poll_init( void )
 		GPIOPinTypeGPIOInput( BTN_CHECK_BASES[i], BTN_CHECK_PINS[i] );
 	}
 
-	// Configure ADC 
+	// Initialize LED ground high, button power low
 	for ( int i = 0; i < 4; ++i )
 	{
-		MAP_GPIOPinTypeADC( LINEAR_BASES[i], LINEAR_PINS[i] );
+		GPIOPinWrite( LED_GROUND_BASE[i], LED_GROUND_PIN[i], HIGH ); // Ground High 
+		GPIOPinWrite( BTN_POWER_BASE[i], BTN_POWER_PIN[i], LOW ); // Ground High 
 	}
+
+	// Configure ADC 
+	//for ( int i = 0; i < 4; ++i )
+	//{
+	//	MAP_GPIOPinTypeADC( LINEAR_BASES[i], LINEAR_PINS[i] );
+	//}
 
 	// Setup Interrupt
 	counter = 0;
