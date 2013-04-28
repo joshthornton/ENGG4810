@@ -3,6 +3,8 @@
 
 #include "config.h"
 
+#define STOP_PLAYING (0xFFFFFFFF) //max unsigned long
+
 void playback_interrupt( void );
 
 void load_init( void );

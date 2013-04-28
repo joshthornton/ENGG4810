@@ -28,7 +28,8 @@ typedef struct button {
 	unsigned long mode;					// Latch or Hold
 	unsigned long action;				// FN Button Action
 	unsigned long loopInterval;			// User specified loop interval
-	unsigned long playTime;				// playing if playTime >= globalTimer
+	unsigned long isLooped;
+	unsigned long playTime;				// playing if playTime <= globalTimer
 	unsigned long interruptModulo;		// Precalculated interrupt modulo
 	FIL *fp;							// File pointer NOTE: not actually file buffer, just pointer (waste of memory)
 } button;

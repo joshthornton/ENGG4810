@@ -16,8 +16,4 @@ void config_init( config *c )
 
 	f_open( &fp, configFilePath, FA_OPEN_EXISTING | FA_READ );
 	f_read( &fp, &cfg, sizeof( cfg ), &br );
-
-	// init each button buffer
-	for ( i = 0; i < NUM_BUTTONS; ++i )
-		buffer_init( &(c->buttons[i].buf) );
 }

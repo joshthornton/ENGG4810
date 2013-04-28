@@ -20,6 +20,24 @@ static FIL inputRead;
 static FIL outputWrite;
 static FIL outputRead;
 static buffer outputBuffer;
+static char *files[NUM_BUTTONS] = {
+	"1.dat",
+	"2.dat",
+	"3.dat",
+	"4.dat",
+	"5.dat",
+	"6.dat",
+	"7.dat",
+	"8.dat",
+	"9.dat",
+	"10.dat",
+	"11.dat",
+	"12.dat",
+	"13.dat",
+	"14.dat",
+	"15.dat",
+	"16.dat"
+};
 
 static const char *files[NUM_BUTTONS] = {};
 
@@ -48,6 +66,14 @@ void load_init( void )
 	f_lseek( &inuptRead, 44100 * 2 );
 	f_lseek( &outputWrite, 44100 * 2 );
 	f_lseek( &outputRead, 44100 * 2 );
+
+	// Set buttons to be first two buttons
+	load_set_one( 0 );
+	load_set_two( 1 );
+	buttons[0]->playTime = STOP_PLAYING;
+	buttons[1]->palyTime = STOP_PLAYING;
+	
+	// Setup interrupt for dac output...
 
 }
 
@@ -99,6 +125,8 @@ signed short pop_echo( void );
 
 void do_work( void )
 {
+	FRESULT res;
+
 	// Check if we are not too far ahead
 	if ( processingCounter < interruptCounter + MAX_LOOKAHEAD )
 	{
@@ -106,10 +134,17 @@ void do_work( void )
 
 		// Load in sample from buttons to inputWrite
 		for ( int i = 0; i < 2; ++i )
-			if ( buttons[i]->playTime >= processingCounter )
+			if ( buttons[i]->playTime <= processingCounter ) // started now or in the past 
 			{
 				signed short temp;
-				f_read( buttons[i]->fp, temp, 2 );
+				res = f_read( buttons[i]->fp, temp, 2 ); // this is auto buffered
+				if ( FR_EOF & res ) {
+					if ( buttons[i]->isLooped ) {
+						buttons[i]->playTime - interruptCounter + ( interruptCounter % buttons[i]->interruptModulo );
+					} else {
+						buttons[i]->playTime = STOP_PLAYING;
+					}
+				}
 				combined += temp;
 			}
 		push_input( combined );
