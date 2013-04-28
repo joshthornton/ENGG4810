@@ -1,0 +1,1 @@
+"../adc.c" "../dac.c" "../main.c" "../startup_ccs.c" "../usb_dev_serial.c" "../usb_structs.c" "../usbdsdcard.c" 
