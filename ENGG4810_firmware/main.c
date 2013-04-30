@@ -35,6 +35,7 @@
 #include "usbdsdcard.h"
 #include "dac.h"
 #include "adc.h"
+#include "load.h"
 
 #define EVER ;;
 
@@ -45,7 +46,7 @@
 #define BUTTON_1 GPIO_PIN_0
 #define BUTTON_2 GPIO_PIN_4
 
-BYTE buffer[2][4096];   /* file copy buffer */
+//BYTE buffer[2][4096];   /* file copy buffer */
 
 int buffNum = 0;
 
@@ -70,9 +71,7 @@ volatile unsigned long g_ulSysTickCount;
 
 //Fatfs vars
 FATFS g_sFatFs;
-static DIR g_sDirObject;
-static FILINFO g_sFileInfo;
-static FIL g_sFileObject;
+
 
 //****************************************************************************
 //
@@ -143,73 +142,42 @@ main(void)
 {
 	ROM_FPULazyStackingEnable();
 
-
-
     //80 Mhz
     SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN);
 
-
-    //
-    // Set the system tick to fire 100 times per second.
-    //
     ROM_SysTickPeriodSet(ROM_SysCtlClockGet() / SYSTICKS_PER_SECOND);
     ROM_SysTickIntEnable();
     ROM_SysTickEnable();
-
-    init_dac();
 
     msc_init();
     composite_device_init();
     SerialInit();
     disable_msc();
-    adc_init();
+    //adc_init();
 
-    //
-    // Drop into the main loop.
-    //
 	if(f_mount(0, &g_sFatFs) != FR_OK)
 	{
 		errorLoop("Didnt mount");
 	}
 
-	//starts at 0 with 1 full
-	//changes to 1 fill 0
-	//changes to 0 fill 1
+	int i = 0;
 
-	//get ahead by two buffers
-	res = f_open(&fsrc, "test.txt", FA_OPEN_EXISTING | FA_READ);
+	test();
 
-	int lastBuffNum = buffNum;
+	for (i = 0; i < 8000; i++)
+		do_work();
 
 
+	dac_init();
 	ROM_IntMasterEnable();
 
-	int i = 0;
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+	GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_3);
+
 	while(1)
     {
-
-		if (!transfer)
-		{
-			/*res = f_open(&fsrc, "test.txt", FA_OPEN_EXISTING | FA_READ);
-			res = f_read(&fsrc, buffer[0], sizeof buffer[0], &br);
-
-			if (res || br == 0)
-			{
-
-			}
-			else
-				CommandPrint(buffer[0]);
-
-
-			f_close(&fsrc);
-
-			for (i = 0; i < 100; i++)
-			{
-				buffer[0][i] = 0;
-			}*/
-    	}
-
     	SerialMain();
+    	do_work();
     }
 
 }

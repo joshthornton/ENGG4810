@@ -54,7 +54,7 @@ extern unsigned long __STACK_TOP;
 //*****************************************************************************
 extern void SysTickHandler(void);
 extern void USB0DeviceIntHandler(void);
-extern void Timer0IntHandler(void);
+extern void playback_interrupt(void);
 extern void adc_interrupt(void);
 
 //*****************************************************************************
@@ -103,7 +103,7 @@ void (* const g_pfnVectors[])(void) =
     adc_interrupt,                      	// ADC Sequence 2
     adc_interrupt,                      	// ADC Sequence 3
     IntDefaultHandler,                      // Watchdog timer
-    Timer0IntHandler,                      // Timer 0 subtimer A
+    playback_interrupt,                      // Timer 0 subtimer A
     IntDefaultHandler,                      // Timer 0 subtimer B
     IntDefaultHandler,                      // Timer 1 subtimer A
     IntDefaultHandler,                      // Timer 1 subtimer B

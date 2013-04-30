@@ -15,10 +15,16 @@ $(GEN_CMDS__FLAG) \
 "./usb_structs.obj" \
 "./usb_dev_serial.obj" \
 "./startup_ccs.obj" \
+"./math_helper.obj" \
 "./main.obj" \
+"./load.obj" \
+"./filterGen.obj" \
 "./dac.obj" \
+"./config.obj" \
+"./buffer.obj" \
 "./adc.obj" \
 -l"libc.a" \
+-ldsplib-cm4f.lib \
 -l"C:/Stellarisware/driverlib/ccs-cm4f/Debug/driverlib-cm4f.lib" \
 -l"C:/Stellarisware/usblib/ccs-cm4f/Debug/usblib-cm4f.lib" \
 "../usb_dev_chidcdc_ccs.cmd" \
@@ -132,7 +138,7 @@ all: ENGG4810.out
 ENGG4810.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Linker'
-	"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/bin/cl470" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -O2 -g --gcc --define=ccs="ccs" --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --diag_warning=225 --display_error_number --gen_func_subsections=on --ual -z --stack_size=640 -m"usb_dev_chidcdc_ccs.map" --heap_size=0 -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/lib" -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include" --reread_libs --warn_sections --display_error_number --rom_model -o "ENGG4810.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/bin/cl470" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -O2 -g --gcc --define=ccs="ccs" --define=ARM_MATH_CM4 --define=PART_LM4F120H5QR --define=TARGET_IS_BLIZZARD_RA1 --diag_warning=225 --display_error_number --gen_func_subsections=on --ual -z --stack_size=640 -m"usb_dev_chidcdc_ccs.map" --heap_size=0 -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/lib" -i"C:/CMSIS/CMSIS/Lib/CCS" -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include" --reread_libs --warn_sections --display_error_number --rom_model -o "ENGG4810.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
@@ -140,8 +146,8 @@ ENGG4810.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(TMS470_EXECUTABLE_OUTPUTS__QUOTED) "ENGG4810.out"
-	-$(RM) "adc.pp" "dac.pp" "main.pp" "startup_ccs.pp" "usb_dev_serial.pp" "usb_structs.pp" "usbdsdcard.pp" "utils\cmdline.pp" "third_party\fatfs\src\ff.pp" "third_party\fatfs\port\mmc-ek-lm4f232h5qd.pp" 
-	-$(RM) "adc.obj" "dac.obj" "main.obj" "startup_ccs.obj" "usb_dev_serial.obj" "usb_structs.obj" "usbdsdcard.obj" "utils\cmdline.obj" "third_party\fatfs\src\ff.obj" "third_party\fatfs\port\mmc-ek-lm4f232h5qd.obj" 
+	-$(RM) "adc.pp" "buffer.pp" "config.pp" "dac.pp" "filterGen.pp" "load.pp" "main.pp" "math_helper.pp" "startup_ccs.pp" "usb_dev_serial.pp" "usb_structs.pp" "usbdsdcard.pp" "utils\cmdline.pp" "third_party\fatfs\src\ff.pp" "third_party\fatfs\port\mmc-ek-lm4f232h5qd.pp" 
+	-$(RM) "adc.obj" "buffer.obj" "config.obj" "dac.obj" "filterGen.obj" "load.obj" "main.obj" "math_helper.obj" "startup_ccs.obj" "usb_dev_serial.obj" "usb_structs.obj" "usbdsdcard.obj" "utils\cmdline.obj" "third_party\fatfs\src\ff.obj" "third_party\fatfs\port\mmc-ek-lm4f232h5qd.obj" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

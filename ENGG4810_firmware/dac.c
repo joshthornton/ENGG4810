@@ -20,46 +20,31 @@
 #define B_MASK (0x10)
 #define IODIR (0x00)
 
-void dac_write(signed long val )
+void dac_write(signed short val )
 {
 	SSIDataPut( SSI2_BASE, val ); // Write Value
-	while( ROM_SSIBusy( SSI2_BASE ) );
+	//while( ROM_SSIBusy( SSI2_BASE ) );
 }
 
-void Timer0IntHandler(void)
+/*void Timer0IntHandler(void)
 {
 
-	static long i = 0;
-	static signed long val = 0;
-	static signed long val1 = 0;
-	static signed long val2 = 0;
+	static signed short val = -30000;
+
 	//static int dir = 0;
 
     ROM_TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-    //HWREGBITW(&g_ulFlags, 0) ^= 1;
 
+   // if (val > 15000)
+   // {
+   // 	val = -15000;
+   // }
 
-    //val1 = buffer[buffNum][i] << 8;
-    //i++;
-    //val2 = buffer[buffNum][i];
-    //val = val1 | val2;
-
-    val = i;
-
-    dac_write(val);
-
-    i++;
-
-    if (i >= 4096)
-    {
-    	//buffNum = !buffNum;
-    	i = 0;
-    }
-
+    dac_write(val++);
 
     ROM_IntMasterDisable();
     ROM_IntMasterEnable();
-}
+}*/
 
 void InitDACSSI(void)
 {
@@ -89,12 +74,12 @@ void InitTimer0( unsigned long hertz )
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
 	ROM_TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
 	ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet() / hertz );
-	ROM_IntEnable(INT_TIMER0A);
 	ROM_TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 	ROM_TimerEnable(TIMER0_BASE, TIMER_A);
+	ROM_IntEnable(INT_TIMER0A);
 }
 
-void init_dac()
+void dac_init()
 {
 	InitDACSSI();
 	InitTimer0( 48000 );

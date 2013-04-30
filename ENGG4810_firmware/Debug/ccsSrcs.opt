@@ -1,1 +1,1 @@
-"../adc.c" "../dac.c" "../main.c" "../startup_ccs.c" "../usb_dev_serial.c" "../usb_structs.c" "../usbdsdcard.c" 
+"../adc.c" "../buffer.c" "../config.c" "../dac.c" "../filterGen.c" "../load.c" "../main.c" "C:/CMSIS/CMSIS/DSP_Lib/Examples/Common/Source/math_helper.c" "../startup_ccs.c" "../usb_dev_serial.c" "../usb_structs.c" "../usbdsdcard.c" 
