@@ -36,6 +36,9 @@ main.obj: C:/Stellarisware/inc/hw_sysctl.h
 main.obj: ../usbdsdcard.h
 main.obj: ../dac.h
 main.obj: ../adc.h
+main.obj: ../load.h
+main.obj: ../config.h
+main.obj: ../buffer.h
 
 ../main.c: 
 C:/Stellarisware/inc/hw_memmap.h: 
@@ -73,3 +76,6 @@ C:/Stellarisware/inc/hw_sysctl.h:
 ../usbdsdcard.h: 
 ../dac.h: 
 ../adc.h: 
+../load.h: 
+../config.h: 
+../buffer.h: 

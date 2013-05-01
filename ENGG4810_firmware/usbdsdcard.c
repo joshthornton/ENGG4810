@@ -406,7 +406,7 @@ USBDMSCStorageOpen(unsigned long ulDrive)
 void
 USBDMSCStorageClose(void * pvDrive)
 {
-    unsigned char ucPower;
+    //unsigned char ucPower;
 
     ASSERT(pvDrive != 0);
 
@@ -418,7 +418,7 @@ USBDMSCStorageClose(void * pvDrive)
     //
     // Power up the card.
     //
-    ucPower = 0;
+    //ucPower = 0;
 
     //
     // Turn off the power to the card.

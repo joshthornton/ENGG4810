@@ -1,1 +1,2 @@
-void init_dac();
+void dac_init();
+void dac_write();
