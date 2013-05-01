@@ -116,6 +116,21 @@ public class Sample {
 			}
 			i += FRAME_SIZE;
 		}
+		
+		// Convert to 12-bit
+//		for ( int i = 0; i < temp.length; i += 2 )
+//		{
+//			short sample = 0;
+//			int b = temp[i] & 0x000000FF;
+//			sample = (short)(sample | b);
+//			b = temp[i+1] & 0x000000FF;
+//			b = b << 8; 
+//			sample = (short)(sample | b);
+//			sample = (short)(sample >> 1); // 15 bit
+//			temp[i] = (byte)(sample);
+//			temp[i+1] = (byte)(sample>>8);
+//		}
+		
 		this.bytes = temp;
 		setup();
 	}

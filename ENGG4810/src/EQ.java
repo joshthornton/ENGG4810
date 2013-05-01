@@ -40,8 +40,7 @@ public class EQ extends SoftwareEffect {
 		this.gains = gains;
 	}
 
-	public byte[] apply(byte[] bytes) {
-		
+	public byte[] apply(byte[] bytes) {		
 		short[] in = toShort(bytes);
 		short[] out = iir( in );
 		return fromShort( out );
