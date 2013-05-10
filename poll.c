@@ -22,6 +22,7 @@
 #define LOW		(0)
 
 // Global global variables
+
 int ledState[4][4];
 int buttonState[4][4];
 
@@ -162,7 +163,7 @@ void poll_interrupt( void )
 		{
 			UARTprintf("button: %d, %d\n", bx,by);
 			buttonState[bx][by] = 1;
-			ledState[by][bx] = 1;
+			ledState[by][bx] = LED_GREEN;
 			index = ( index + 1 ) % 2;
 		} else if ( !val ) {
 			buttonState[bx][by] = 0;
@@ -174,5 +175,7 @@ void poll_interrupt( void )
 	bx++;
 	if ( bx == 4 )
 		bx = 0;
+
+	// Check an ADC
 }
 

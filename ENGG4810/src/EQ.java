@@ -1,43 +1,21 @@
 public class EQ extends SoftwareEffect {
 	
-	private class IIRCoefficients {
-	    public double beta;
-	    public double alpha;
-	    public double gamma;
-
-	    public IIRCoefficients(double beta, double alpha, double gamma) {
-	        this.beta = beta;
-	        this.alpha = alpha;
-	        this.gamma = gamma;
-	    }
-	}
 	private double[] gains;
 	private final static int NUM_BANDS = 10;
-	private IIRCoefficients coefficients[] = {
-        /* 31 Hz*/
-        new IIRCoefficients(9.9688176273e-01, 1.5591186337e-03, 1.9968622855e+00),
-        /* 62 Hz*/
-        new IIRCoefficients(9.9377323686e-01, 3.1133815717e-03, 1.9936954495e+00),
-        /* 125 Hz*/
-        new IIRCoefficients(9.8748575691e-01, 6.2571215431e-03, 1.9871705722e+00),
-        /* 250 Hz*/
-        new IIRCoefficients(9.7512812040e-01, 1.2435939802e-02, 1.9738753198e+00),
-        /* 500 Hz*/
-        new IIRCoefficients(9.5087485437e-01, 2.4562572817e-02, 1.9459267562e+00),
-        /* 1k Hz*/
-        new IIRCoefficients(9.0416308662e-01, 4.7918456688e-02, 1.8848691023e+00),
-        /* 2k Hz*/
-        new IIRCoefficients(8.1751373987e-01, 9.1243130064e-02, 1.7442229115e+00),
-        /* 4k Hz*/
-        new IIRCoefficients(6.6840529852e-01, 1.6579735074e-01, 1.4047189863e+00),
-        /* 8k Hz*/
-        new IIRCoefficients(4.4858358977e-01, 2.7570820511e-01, 6.0517475334e-01),
-        /* 16k Hz*/
-        new IIRCoefficients(2.4198119087e-01, 3.7900940457e-01, -8.0845085113e-01)
-};
+	private final static double qualityFactor = 1/Math.sqrt(2);
+	private final static int[] bands = { 31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000 };
+	private static double[][] alpha;
+	private static double[][] beta;
 	
 	public EQ( double[] gains ) {
 		this.gains = gains;
+		
+		alpha = new double[NUM_BANDS][3];
+		beta = new double[NUM_BANDS][3];
+		
+		// calculate coefficients
+		
+		
 	}
 
 	public byte[] apply(byte[] bytes) {		
@@ -48,27 +26,29 @@ public class EQ extends SoftwareEffect {
 	}
 	
 	public short[] iir( short[] in ) {
-        double[][] temp = new double[NUM_BANDS][3];
-        double[] out = new double[in.length];
+        double[][] out = new double[NUM_BANDS][3];
+        double[] combined = new double[in.length];
 
-        out[0] = in[0];
-        out[1] = in[1];
+        combined[0] = in[0];
+        combined[1] = in[1];
         for ( int i = 2; i < in.length; i++ ) {
-            for ( int j = 0; j < NUM_BANDS; ++j ) {
-            	temp[j][i%3] =	coefficients[j].alpha * ( in[i] - in[i-2] ) +
-            				coefficients[j].gamma * temp[j][(i-1)%3] -
-            				coefficients[j].beta * temp[j][(i-2)%3];
-            	out[i] += temp[j][i%3] * gains[j];
+            for ( int band = 0; band < NUM_BANDS; ++band ) {
+            	out[band][i%3] =	beta[band][0] * in[i] +
+            						beta[band][1] * in[i-1] +
+            						beta[band][2] * in[i-2] -
+            						alpha[band][0] * out[band][(i-1)%3] -
+            						alpha[band][1] * out[band][(i-2)%3];
+            	combined[i] += out[band][i%3] * gains[band];
             }
             
             // Normalise
-            out[i] += ( in[i] * 0.2 );
-            out[i] *= 5;
+            combined[i] += ( in[i] * 0.25 );
+            combined[i] *= 4;
         }
         
-        short[] shorts = new short[ out.length ];
-        for( int i = 0; i < out.length; ++i )
-        	shorts[i] = (short)out[i];
+        short[] shorts = new short[ combined.length ];
+        for( int i = 0; i < combined.length; ++i )
+        	shorts[i] = (short)combined[i];
         
         return shorts;
         
