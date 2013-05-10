@@ -19,6 +19,7 @@
 #include "driverlib/ssi.h"
 #include <math.h>
 #include "arm_math.h"
+#include "filterGen.h"
 
 #define MAX_LOOKAHEAD (8192)
 #define MASK 0x1FFF
@@ -44,6 +45,7 @@ static int effects[2];
 static int effectParam[2][2];
 
 static signed short outputBuf[MAX_LOOKAHEAD];
+static signed short delayBuf[MAX_LOOKAHEAD];
 
 static int writeIndex;
 static int readIndex;
@@ -55,7 +57,7 @@ float a[3];
 float b[3];
 
 static char *files[NUM_BUTTONS] = {
-	"guitar.dat",
+	"jazz.dat",
 	"sine.dat",
 	"3.dat",
 	"4.dat",
@@ -113,9 +115,13 @@ void load_init( void )
 	effectParam[0][0] = 50;
 	effectParam[0][1] = 10;
 
-	generate_filter_coeffs(EFFECT_LOWPASS, 1000, 0.707, a, b);
+	int cutOff = 5000;
+	float quality = 0.707f;
+
+	generate_filter_coeffs(EFFECT_HIGHPASS, cutOff, quality, a, b);
 }
 
+//possibly should be this in the do work function
 signed short process( signed short input, signed short delay, signed short echo )
 {
 	int i = 0;
@@ -144,7 +150,6 @@ signed short process( signed short input, signed short delay, signed short echo 
 			case EFFECT_HIGHPASS:
 			case EFFECT_BANDPASS:
 			case EFFECT_NOTCH:
-				input = (input >> 2); //just to guard about overflow
 				out = b[0]*input + b[1]*prevIn + b[2]*prevIn2 - a[1]*prevOut - a[2]*prevOut2;
 				output += (signed short) out;
 				prevIn2 = prevIn;
@@ -154,15 +159,20 @@ signed short process( signed short input, signed short delay, signed short echo 
 				prevOut = output;
 				break;
 			case EFFECT_DELAY:
+				//output = input + effectParam[i][0]*delayBuf[]
+				//delayBuf[ ] = input;
 				break;
 			case EFFECT_ECHO:
+				//output = input + effectParam[i][0]*delayBuf[]
+				//delayBuf[ ] = output;
+
 				break;
 			case EFFECT_DECI_BIT:
 				num = deci_y2 - deci_y1;
 				denom = ((float)deciCount)/effectParam[i][1];
 
 				interp = num/denom + deci_y1;
-				output += ((signed short) interp);// >> 2;
+				output += ((signed short) interp) >> 2;
 
 				if (deciCount++ == effectParam[i][1])
 				{
@@ -173,7 +183,7 @@ signed short process( signed short input, signed short delay, signed short echo 
 					deciCount = 1;
 				}
 
-				//output += ((input/effectParam[i][0]) * effectParam[i][0]) >> 2; //crush
+				output += ((input/effectParam[i][0]) * effectParam[i][0]) >> 2; //crush
 
 				break;
 			case EFFECT_BITWISE:
@@ -188,6 +198,7 @@ signed short process( signed short input, signed short delay, signed short echo 
 	return output;
 }
 
+//think this should
 void push_output( signed short sample )
 {
 	outputBuf[writeIndex++] = sample;
@@ -299,7 +310,8 @@ void playback_interrupt( void )
 	//GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3, 0xFF);
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
-	SSIDataPut( SSI2_BASE, outputBuf[readIndex++] ); // Write Value
+	SSIDataPut( SSI2_BASE, outputBuf[readIndex++]);// outputBuf[readIndex++] ); // Write Value
+
 	readIndex &= MASK;
 
 	interruptCounter++;
@@ -320,8 +332,8 @@ void do_work( void )
 		{
 			temp = 0;
 
-			res = f_read( b1.fp, &temp, 2, &read ); // this is auto buffered
-			temp = (temp << 8) | ((temp >> 8) & 0x00FF);
+			res = f_read( b1.fp, &temp, 2, &read );
+			temp = (temp << 8) | ((temp >> 8) & 0x00FF); // Change the Endian-ness
 
 			if ( read == 0 || res ) {
 				if ( b1.isLooped ) {
@@ -331,14 +343,14 @@ void do_work( void )
 					b1.playTime = STOP_PLAYING;
 				}
 			}
-			combined += (temp >> 1);
+			combined += (temp >> 4);
 		}
 
 		if (b2.playTime <= processingCounter ) // started now or in the past
 		{
 			signed short temp = 0;
 
-			res = f_read(b2.fp, &temp, 2, &read); // this is auto buffered
+			res = f_read(b2.fp, &temp, 2, &read);
 
 			temp = (temp << 8) | ((temp >> 8) & 0x00FF);
 
@@ -351,14 +363,13 @@ void do_work( void )
 				}
 			}
 
-			combined += (temp >> 1);
+			combined += (temp >> 4);
 		}
 
-		//push_input( combined );
-		// Load sample into output
-		signed short output = process( combined, 0, 0); //, pop_delay(), pop_echo() );
+		signed short output = process( combined, 0, 0);
 
-		push_output( output );
+		outputBuf[writeIndex++] = output;
+		writeIndex &= MASK;
 
 		processingCounter++;
 	}

@@ -36,6 +36,7 @@ load.obj: C:/CMSIS/CMSIS/Include/core_cmFunc.h
 load.obj: C:/CMSIS/CMSIS/Include/core_cm4_simd.h
 load.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/string.h
 load.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/math.h
+load.obj: ../filterGen.h
 
 ../load.c: 
 ../load.h: 
@@ -73,3 +74,4 @@ C:/CMSIS/CMSIS/Include/core_cmFunc.h:
 C:/CMSIS/CMSIS/Include/core_cm4_simd.h: 
 C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/string.h: 
 C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/math.h: 
+../filterGen.h: 
