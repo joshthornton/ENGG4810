@@ -15,6 +15,7 @@ $(GEN_CMDS__FLAG) \
 "./usb_structs.obj" \
 "./usb_dev_serial.obj" \
 "./startup_ccs.obj" \
+"./poll.obj" \
 "./math_helper.obj" \
 "./main.obj" \
 "./load.obj" \
@@ -146,8 +147,8 @@ ENGG4810.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(TMS470_EXECUTABLE_OUTPUTS__QUOTED) "ENGG4810.out"
-	-$(RM) "adc.pp" "buffer.pp" "config.pp" "dac.pp" "filterGen.pp" "load.pp" "main.pp" "math_helper.pp" "startup_ccs.pp" "usb_dev_serial.pp" "usb_structs.pp" "usbdsdcard.pp" "utils\cmdline.pp" "third_party\fatfs\src\ff.pp" "third_party\fatfs\port\mmc-ek-lm4f232h5qd.pp" 
-	-$(RM) "adc.obj" "buffer.obj" "config.obj" "dac.obj" "filterGen.obj" "load.obj" "main.obj" "math_helper.obj" "startup_ccs.obj" "usb_dev_serial.obj" "usb_structs.obj" "usbdsdcard.obj" "utils\cmdline.obj" "third_party\fatfs\src\ff.obj" "third_party\fatfs\port\mmc-ek-lm4f232h5qd.obj" 
+	-$(RM) "adc.pp" "buffer.pp" "config.pp" "dac.pp" "filterGen.pp" "load.pp" "main.pp" "math_helper.pp" "poll.pp" "startup_ccs.pp" "usb_dev_serial.pp" "usb_structs.pp" "usbdsdcard.pp" "utils\cmdline.pp" "third_party\fatfs\src\ff.pp" "third_party\fatfs\port\mmc-ek-lm4f232h5qd.pp" 
+	-$(RM) "adc.obj" "buffer.obj" "config.obj" "dac.obj" "filterGen.obj" "load.obj" "main.obj" "math_helper.obj" "poll.obj" "startup_ccs.obj" "usb_dev_serial.obj" "usb_structs.obj" "usbdsdcard.obj" "utils\cmdline.obj" "third_party\fatfs\src\ff.obj" "third_party\fatfs\port\mmc-ek-lm4f232h5qd.obj" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

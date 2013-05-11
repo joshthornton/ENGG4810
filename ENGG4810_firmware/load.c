@@ -20,6 +20,7 @@
 #include <math.h>
 #include "arm_math.h"
 #include "filterGen.h"
+#include "config.h"
 
 #define MAX_LOOKAHEAD (8192)
 #define MASK 0x1FFF
@@ -27,7 +28,7 @@
 // Global global variables
 
 // Local global variables
-static unsigned long interruptCounter;
+unsigned long interruptCounter;
 static unsigned long processingCounter;
 static unsigned long delay;
 static unsigned long echo;
@@ -50,15 +51,15 @@ static signed short delayBuf[MAX_LOOKAHEAD];
 static int writeIndex;
 static int readIndex;
 
-static button b1;
-static button b2;
+static button *b1;
+static button *b2;
 
 float a[3];
 float b[3];
 
 static char *files[NUM_BUTTONS] = {
-	"jazz.dat",
-	"sine.dat",
+	"1.dat",
+	"2.dat",
 	"3.dat",
 	"4.dat",
 	"5.dat",
@@ -75,6 +76,11 @@ static char *files[NUM_BUTTONS] = {
 	"16.dat"
 };
 
+
+void load_generate_coeffs(int effect, int Fc, float Q)
+{
+	generate_filter_coeffs(effect, Fc, Q, a, b);
+}
 
 
 
@@ -105,8 +111,8 @@ void load_init( void )
 	// Set buttons to be first two buttons
 	load_set_one( 0 );
 	load_set_two( 1 );
-	b1.playTime = STOP_PLAYING;
-	b2.playTime = STOP_PLAYING;
+	b1->playTime = STOP_PLAYING;
+	b2->playTime = STOP_PLAYING;
 
 	//effect[0] = cfg.effectOne;
 	//effect[1] = cfg.effectTwo;
@@ -115,87 +121,18 @@ void load_init( void )
 	effectParam[0][0] = 50;
 	effectParam[0][1] = 10;
 
-	int cutOff = 5000;
+	int cutOff = 3000;
 	float quality = 0.707f;
 
-	generate_filter_coeffs(EFFECT_HIGHPASS, cutOff, quality, a, b);
+
 }
 
 //possibly should be this in the do work function
 signed short process( signed short input, signed short delay, signed short echo )
 {
-	int i = 0;
-	signed short output = 0;
-	static int deciCount = 1;
 
-	static signed short deci_y1 = 0;
-	static signed short deci_y2 = 0;
 
-	float num;
-	float denom;
-	float interp;
-	float out;
-
-	static signed short prevIn = 0;
-	static signed short prevIn2 = 0;
-	static signed short prevOut = 0;
-	static signed short prevOut2 = 0;
-
-	for (i = 0; i < 2; i++)
-	{
-		switch (effects[i])
-		{
-			//TO DO: get rid of the overflow - if we are using 12 bit samples this shouldnt be a problem though i hope
-			case EFFECT_LOWPASS:
-			case EFFECT_HIGHPASS:
-			case EFFECT_BANDPASS:
-			case EFFECT_NOTCH:
-				out = b[0]*input + b[1]*prevIn + b[2]*prevIn2 - a[1]*prevOut - a[2]*prevOut2;
-				output += (signed short) out;
-				prevIn2 = prevIn;
-				prevIn = input;
-
-				prevOut2 = prevOut;
-				prevOut = output;
-				break;
-			case EFFECT_DELAY:
-				//output = input + effectParam[i][0]*delayBuf[]
-				//delayBuf[ ] = input;
-				break;
-			case EFFECT_ECHO:
-				//output = input + effectParam[i][0]*delayBuf[]
-				//delayBuf[ ] = output;
-
-				break;
-			case EFFECT_DECI_BIT:
-				num = deci_y2 - deci_y1;
-				denom = ((float)deciCount)/effectParam[i][1];
-
-				interp = num/denom + deci_y1;
-				output += ((signed short) interp) >> 2;
-
-				if (deciCount++ == effectParam[i][1])
-				{
-					//load in a new y2
-					deci_y1 = deci_y2;
-					deci_y2 = input;
-
-					deciCount = 1;
-				}
-
-				output += ((input/effectParam[i][0]) * effectParam[i][0]) >> 2; //crush
-
-				break;
-			case EFFECT_BITWISE:
-				output += ((input & effectParam[i][0]) | effectParam[i][1]);
-				break;
-			default:
-				//output += input >> 2;
-		}
-
-	}
-
-	return output;
+	return 1;
 }
 
 //think this should
@@ -255,39 +192,41 @@ signed short pop_echo( void )
 
 void load_set_one( unsigned long index )
 {
-	b1.mode = MODE_LATCH;
-	b1.action = ACTION_EFFECT_NONE;
-	b1.loopInterval = 0; //whats this even for
-	b1.playTime = 0;
-	b1.isLooped = 1;
-	b1.interruptModulo = 50;
+	b1 = &(cfg.buttons[index]);
+	b1->mode = MODE_HOLD;
+	b1->action = ACTION_EFFECT_NONE;
+	b1->loopInterval = 0; //whats this even for
+	b1->playTime = 0;
+	b1->isLooped = 1;
+	b1->interruptModulo = 50;
 
 	// Set beat interval play time
-	b1.playTime = interruptCounter + ( interruptCounter % b1.interruptModulo );
+	b1->playTime = interruptCounter + ( interruptCounter % b1->interruptModulo );
 
 	// Set file pointer
-	b1.fp = &(buttonFiles[index]);
-	FRESULT res = f_open( b1.fp, files[index], FA_OPEN_EXISTING | FA_READ );
+	b1->fp = &(buttonFiles[index]);
+	FRESULT res = f_open( b1->fp, files[index], FA_OPEN_EXISTING | FA_READ );
 
 }
 
 void load_set_two( unsigned long index )
 {
+	b2 = &(cfg.buttons[index]);
 
-	b2.mode = MODE_LATCH;
-	b2.action = ACTION_EFFECT_NONE;
-	b2.loopInterval = 0; //whats this even for
-	b2.playTime = 0;
-	b2.isLooped = 1;
-	b2.interruptModulo = 50;
+	b2->mode = MODE_LATCH;
+	b2->action = ACTION_EFFECT_NONE;
+	b2->loopInterval = 0; //whats this even for
+	b2->playTime = 0;
+	b2->isLooped = 1;
+	b2->interruptModulo = 50;
 
 
 	// Set beat interval play time
-	b2.playTime = interruptCounter + ( interruptCounter % b2.interruptModulo );
+	b2->playTime = interruptCounter + ( interruptCounter % b2->interruptModulo );
 
 	// Set file pointer
-	b2.fp = &(buttonFiles[index]);
-	FRESULT res = f_open( b2.fp, files[index], FA_OPEN_EXISTING | FA_READ );
+	b2->fp = &(buttonFiles[index]);
+	FRESULT res = f_open( b2->fp, files[index], FA_OPEN_EXISTING | FA_READ );
 }
 
 void load_set_delay( unsigned long samples )
@@ -310,7 +249,7 @@ void playback_interrupt( void )
 	//GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3, 0xFF);
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
-	SSIDataPut( SSI2_BASE, outputBuf[readIndex++]);// outputBuf[readIndex++] ); // Write Value
+	SSIDataPut( SSI2_BASE, (outputBuf[readIndex++]));// outputBuf[readIndex++] ); // Write Value
 
 	readIndex &= MASK;
 
@@ -323,55 +262,128 @@ void do_work( void )
 	FRESULT res;
 	UINT read = 0;
 	signed short temp = 0;
-	signed short combined = 0;
+	signed short input = 0;
+	signed short output = 0;
+	static int deciCount = 1;
+
+	static signed short deci_y1 = 0;
+	static signed short deci_y2 = 0;
+
+	float num;
+	float denom;
+	float interp;
+	float out;
+
+	static signed short prevIn = 0;
+	static signed short prevIn2 = 0;
+	static signed short prevOut = 0;
+	static signed short prevOut2 = 0;
 
 	// Check if we are not too far ahead
 	if ( processingCounter < interruptCounter + MAX_LOOKAHEAD )
 	{
-		if ( b1.playTime <= processingCounter ) // started now or in the past
+		if ( b1->playTime <= processingCounter ) // started now or in the past
 		{
 			temp = 0;
 
-			res = f_read( b1.fp, &temp, 2, &read );
-			temp = (temp << 8) | ((temp >> 8) & 0x00FF); // Change the Endian-ness
+			res = f_read( b1->fp, &temp, 2, &read );
 
 			if ( read == 0 || res ) {
-				if ( b1.isLooped ) {
-					b1.playTime = interruptCounter + 1; //( interruptCounter % b1.interruptModulo );
-					f_lseek(b1.fp, 0);
+				if ( b1->isLooped ) {
+					b1->playTime = interruptCounter + 1; //( interruptCounter % b1->interruptModulo );
+					f_lseek(b1->fp, 0);
 				} else {
-					b1.playTime = STOP_PLAYING;
+					b1->playTime = STOP_PLAYING;
 				}
 			}
-			combined += (temp >> 4);
+			input += temp >> 4;
 		}
 
-		if (b2.playTime <= processingCounter ) // started now or in the past
+		if (b2->playTime <= processingCounter ) // started now or in the past
 		{
 			signed short temp = 0;
 
-			res = f_read(b2.fp, &temp, 2, &read);
-
-			temp = (temp << 8) | ((temp >> 8) & 0x00FF);
+			res = f_read(b2->fp, &temp, 2, &read);
 
 			if ( read == 0 || res ) {
-				if ( b2.isLooped ) {
-					b2.playTime = processingCounter + 1;
-					f_lseek(b2.fp, 0);
+				if ( b2->isLooped ) {
+					b2->playTime = processingCounter + 1;
+					f_lseek(b2->fp, 0);
 				} else {
-					b2.playTime = STOP_PLAYING;
+					b2->playTime = STOP_PLAYING;
 				}
 			}
 
-			combined += (temp >> 4);
+			input += temp >> 4;
+		}
+		//would it be worth checking if input = 0 and having a different return case?
+		int i = 0;
+		for (i = 0; i < 2; i++)
+		{
+			switch (effects[i])
+			{
+				//TO DO: get rid of the overflow - if we are using 12 bit samples this shouldnt be a problem though i hope
+				case EFFECT_LOWPASS:
+				case EFFECT_HIGHPASS:
+				case EFFECT_BANDPASS:
+				case EFFECT_NOTCH:
+					out = b[0]*input + b[1]*prevIn + b[2]*prevIn2 - a[1]*prevOut - a[2]*prevOut2;
+					output += (signed short) out;
+					prevIn2 = prevIn;
+					prevIn = input;
+
+					prevOut2 = prevOut;
+					prevOut = output;
+					break;
+				case EFFECT_DELAY:
+					//output = input + effectParam[i][0]*delayBuf[]
+					//delayBuf[ ] = input;
+					break;
+				case EFFECT_ECHO:
+					//output = input + effectParam[i][0]*delayBuf[]
+					//delayBuf[ ] = output;
+
+					break;
+				case EFFECT_DECI_BIT:
+					num = deci_y2 - deci_y1;
+					denom = ((float)deciCount)/effectParam[i][1];
+
+					interp = num/denom + deci_y1;
+					output += ((signed short) interp) >> 2;
+
+					if (deciCount++ == effectParam[i][1])
+					{
+						//load in a new y2
+						deci_y1 = deci_y2;
+						deci_y2 = input;
+
+						deciCount = 1;
+					}
+
+					output += ((input/effectParam[i][0]) * effectParam[i][0]) >> 2; //crush
+
+					break;
+				case EFFECT_BITWISE:
+					output += ((input & effectParam[i][0]) | effectParam[i][1]);
+					break;
+				default:
+					//output += input >> 2;
+			}
+
 		}
 
-		signed short output = process( combined, 0, 0);
-
 		outputBuf[writeIndex++] = output;
+
+
+
 		writeIndex &= MASK;
 
 		processingCounter++;
+
+
+
+
+
 	}
 }
 

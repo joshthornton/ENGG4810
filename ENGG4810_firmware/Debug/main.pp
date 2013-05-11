@@ -39,6 +39,7 @@ main.obj: ../adc.h
 main.obj: ../load.h
 main.obj: ../config.h
 main.obj: ../buffer.h
+main.obj: ../poll.h
 
 ../main.c: 
 C:/Stellarisware/inc/hw_memmap.h: 
@@ -79,3 +80,4 @@ C:/Stellarisware/inc/hw_sysctl.h:
 ../load.h: 
 ../config.h: 
 ../buffer.h: 
+../poll.h: 

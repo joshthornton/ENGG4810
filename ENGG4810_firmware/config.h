@@ -16,14 +16,16 @@
 #define EFFECT_NONE			(0)
 #define EFFECT_LOWPASS		(1)
 #define EFFECT_HIGHPASS		(2)
-#define EFFECT_BANDPASS		(3)
-#define EFFECT_NOTCH		(4)
+#define EFFECT_BANDPASS		(4)
+#define EFFECT_NOTCH		(8)
 #define EFFECT_DELAY		(5)
 #define EFFECT_ECHO			(6)
 #define EFFECT_DECI_BIT		(7)
-#define EFFECT_BITWISE		(8)
+#define EFFECT_BITWISE		(9)
 
 #define INTERRUPT_HERTZ		(44100)
+
+#define COEFF_MASK  		(EFFECT_LOWPASS | EFFECT_HIGHPASS | EFFECT_BANDPASS | EFFECT_NOTCH)
 
 typedef struct button {
 	unsigned long mode;					// Latch or Hold

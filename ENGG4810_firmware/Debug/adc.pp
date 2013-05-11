@@ -13,9 +13,14 @@ adc.obj: C:/Stellarisware/driverlib/rom.h
 adc.obj: C:/Stellarisware/driverlib/sysctl.h
 adc.obj: C:/Stellarisware/driverlib/timer.h
 adc.obj: C:/Stellarisware/driverlib/adc.h
-adc.obj: C:/Stellarisware/utils/uartstdio.h
 adc.obj: C:/Stellarisware/inc/hw_ssi.h
 adc.obj: C:/Stellarisware/driverlib/ssi.h
+adc.obj: ../adc.h
+adc.obj: ../config.h
+adc.obj: ../buffer.h
+adc.obj: ../third_party/fatfs/src/ff.h
+adc.obj: ../third_party/fatfs/src/integer.h
+adc.obj: ../load.h
 
 ../adc.c: 
 C:/Stellarisware/inc/hw_ints.h: 
@@ -30,6 +35,11 @@ C:/Stellarisware/driverlib/rom.h:
 C:/Stellarisware/driverlib/sysctl.h: 
 C:/Stellarisware/driverlib/timer.h: 
 C:/Stellarisware/driverlib/adc.h: 
-C:/Stellarisware/utils/uartstdio.h: 
 C:/Stellarisware/inc/hw_ssi.h: 
 C:/Stellarisware/driverlib/ssi.h: 
+../adc.h: 
+../config.h: 
+../buffer.h: 
+../third_party/fatfs/src/ff.h: 
+../third_party/fatfs/src/integer.h: 
+../load.h: 

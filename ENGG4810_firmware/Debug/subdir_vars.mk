@@ -15,6 +15,7 @@ C_SRCS += \
 ../load.c \
 ../main.c \
 C:/CMSIS/CMSIS/DSP_Lib/Examples/Common/Source/math_helper.c \
+../poll.c \
 ../startup_ccs.c \
 ../usb_dev_serial.c \
 ../usb_structs.c \
@@ -29,6 +30,7 @@ OBJS += \
 ./load.obj \
 ./main.obj \
 ./math_helper.obj \
+./poll.obj \
 ./startup_ccs.obj \
 ./usb_dev_serial.obj \
 ./usb_structs.obj \
@@ -43,6 +45,7 @@ C_DEPS += \
 ./load.pp \
 ./main.pp \
 ./math_helper.pp \
+./poll.pp \
 ./startup_ccs.pp \
 ./usb_dev_serial.pp \
 ./usb_structs.pp \
@@ -57,6 +60,7 @@ C_DEPS__QUOTED += \
 "load.pp" \
 "main.pp" \
 "math_helper.pp" \
+"poll.pp" \
 "startup_ccs.pp" \
 "usb_dev_serial.pp" \
 "usb_structs.pp" \
@@ -71,6 +75,7 @@ OBJS__QUOTED += \
 "load.obj" \
 "main.obj" \
 "math_helper.obj" \
+"poll.obj" \
 "startup_ccs.obj" \
 "usb_dev_serial.obj" \
 "usb_structs.obj" \
@@ -85,6 +90,7 @@ C_SRCS__QUOTED += \
 "../load.c" \
 "../main.c" \
 "C:/CMSIS/CMSIS/DSP_Lib/Examples/Common/Source/math_helper.c" \
+"../poll.c" \
 "../startup_ccs.c" \
 "../usb_dev_serial.c" \
 "../usb_structs.c" \

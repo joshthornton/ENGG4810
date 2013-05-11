@@ -16,4 +16,7 @@ void load_set_echo( unsigned long samples );
 void do_work( void );
 void test (void);
 
+extern unsigned long interruptCounter;
+void load_generate_coeffs(int effect, int Fc, float Q);
+
 #endif

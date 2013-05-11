@@ -10,9 +10,17 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 #include "driverlib/adc.h"
-#include "utils/uartstdio.h"
+
 #include "inc/hw_ssi.h"
 #include "driverlib/ssi.h"
+
+
+#include "adc.h"
+#include "config.h"
+#include "load.h"
+
+// Create global symbol
+unsigned char adcValues[4];
 
 #define FREQ 100
 
@@ -23,7 +31,7 @@ void adc_init(void)
 	TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
 
 	//Set what the timer runs to
-	TimerLoadSet(TIMER0_BASE, TIMER_A, ROM_SysCtlClockGet() / FREQ );
+	TimerLoadSet(TIMER1_BASE, TIMER_A, ROM_SysCtlClockGet() / FREQ );
 
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
 	GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_1);
@@ -36,7 +44,6 @@ void adc_init(void)
 	ADCSequenceStepConfigure(ADC_BASE, 1, 0, ADC_CTL_CH0);
 	ADCSequenceStepConfigure(ADC_BASE, 1, 1, ADC_CTL_CH1);
 	ADCSequenceStepConfigure(ADC_BASE, 1, 2, ADC_CTL_CH2);
-
 	ADCSequenceStepConfigure(ADC_BASE, 1, 3, ADC_CTL_CH3 | ADC_CTL_IE | ADC_CTL_END);
 
 	ADCSequenceEnable(ADC0_BASE, 1);
@@ -58,11 +65,33 @@ void adc_init(void)
 //triggers when it's got all the channels read
 void adc_interrupt(void)
 {
-	unsigned long adcValue[4];
-
+	unsigned long temp[4];
+	unsigned long i;
+	ADCIntClear(ADC0_BASE, 1);
+	ADCSequenceDataGet(ADC0_BASE, 1, temp);
 	ADCIntClear(ADC0_BASE, 1);
 
-	ADCSequenceDataGet(ADC0_BASE, 1, adcValue);
+	for ( i = 3; i < 4; i++ )
+	{
+		temp[i] = temp[i] >> 5; // 7-bit number (128 steps)
+		if ( temp[i] != adcValues[i] )
+		{
 
-	ADCIntClear(ADC0_BASE, 1);
+			load_generate_coeffs(EFFECT_LOWPASS, temp[3]*150, 0.707f);
+			/*if ((cfg.effectOne & COEFF_MASK) &&  (i < 2))
+			{
+				load_generate_coeffs(cfg.effectOne, temp[i] * 150 , 0.707f);
+			}
+
+			if ((cfg.effectTwo & COEFF_MASK) && (i > 1))
+			{
+				load_generate_coeffs(cfg.effectOne, temp[i]*50, 0.707f);
+			}*/
+			adcValues[i] = (unsigned char)temp[i];
+		}
+
+	}
+
+
+
 }

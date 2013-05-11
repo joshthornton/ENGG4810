@@ -36,6 +36,7 @@
 #include "dac.h"
 #include "adc.h"
 #include "load.h"
+#include "poll.h"
 
 #define EVER ;;
 
@@ -153,7 +154,7 @@ main(void)
     composite_device_init();
     SerialInit();
     disable_msc();
-    //adc_init();
+    adc_init();
 
 	if(f_mount(0, &g_sFatFs) != FR_OK)
 	{
@@ -164,11 +165,14 @@ main(void)
 
 	test();
 
-	for (i = 0; i < 8000; i++)
-		do_work();
+	//load_init();
+
+   // for (i = 0; i < 8000; i++)
+	//	do_work();
 
 
 	dac_init();
+	//poll_init();
 	ROM_IntMasterEnable();
 
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
