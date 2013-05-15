@@ -18,6 +18,7 @@
 #include "adc.h"
 #include "config.h"
 #include "load.h"
+#include "buffer.h"
 
 // Create global symbol
 unsigned char adcValues[4];
@@ -28,6 +29,7 @@ unsigned char adcValues[4];
 #define FREQ_OFFSET		(20.0f)
 #define FREQ_GRADIENT	( (20000.0f-FREQ_OFFSET) / NUM_LEVELS )
 #define Q_GRADIENT		( 1.0f / NUM_LEVELS )
+#define SIZE_GRADIENT	( BUFFER_SIZE / NUM_LEVELS )
 
 void adc_init(void)
 {
@@ -81,14 +83,24 @@ void adc_interrupt(void)
 		temp[i] = temp[i] >> 5; // 7-bit number (128 steps)
 		if ( temp[i] != adcValues[i] )
 		{
-			if ((cfg.effectOne & COEFF_MASK) &&  (i <= 1) ) // Effect One enabled and change is in effect one parameters
-			{
-				load_generate_coeffs( cfg.effectOne, temp[0] * FREQ_GRADIENT + FREQ_OFFSET , temp[1] * Q_GRADIENT );
-			}
 
-			if ((cfg.effectTwo & COEFF_MASK) && (i >= 2) ) // Effect Two enabled and change is in effect two parameters
+			if ( i <= 2 ) // Effect one parameters changed
 			{
-				load_generate_coeffs( cfg.effectTwo, temp[2] * FREQ_GRADIENT + FREQ_OFFSET , temp[3] * Q_GRADIENT );
+				if ( cfg.effectOne & COEFF_MASK )
+					load_generate_coeffs( cfg.effectOne, temp[0] * FREQ_GRADIENT + FREQ_OFFSET , temp[1] * Q_GRADIENT );
+				else if ( cfg.effectOne == EFFECT_DELAY )
+					load_set_delay( temp[0] * SIZE_GRADIENT, temp[1] * Q_GRADIENT ); 
+				else if ( cfg.effectOne == EFFECT_ECHO )
+					load_set_echo( temp[0] * SIZE_GRADIENT, temp[1] * Q_GRADIENT ); 
+
+			} else { // Effect two parameters changed
+
+				if ( cfg.effectTwo & COEFF_MASK )
+					load_generate_coeffs( cfg.effectTwo, temp[2] * FREQ_GRADIENT + FREQ_OFFSET , temp[3] * Q_GRADIENT );
+				else if ( cfg.effectTwo == EFFECT_DELAY )
+					load_set_delay( temp[2] * SIZE_GRADIENT, temp[3] * Q_GRADIENT ); 
+				else if ( cfg.effectTwo == EFFECT_ECHO )
+					load_set_echo( temp[2] * SIZE_GRADIENT, temp[3] * Q_GRADIENT ); 
 			}
 			
 			adcValues[i] = (unsigned char)temp[i];

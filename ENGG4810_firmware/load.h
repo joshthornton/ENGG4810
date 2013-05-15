@@ -10,8 +10,8 @@ void playback_interrupt( void );
 void load_init( void );
 void load_set_one( unsigned long index );
 void load_set_two( unsigned long index );
-void load_set_delay( unsigned long samples );
-void load_set_echo( unsigned long samples );
+void load_set_delay( unsigned long size, float amount );
+void load_set_echo( unsigned long size, float amount );
 
 void do_work( void );
 void test (void);

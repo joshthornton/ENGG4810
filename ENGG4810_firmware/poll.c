@@ -33,8 +33,6 @@ static unsigned long lx, ly, bx, by;
 static unsigned long trackOne;
 static unsigned long trackTwo;
 
-
-
 // LEDs
 static const unsigned long LED_GROUND_PERIPHS[4] = { SYSCTL_PERIPH_GPIOE, SYSCTL_PERIPH_GPIOA, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD };
 static const unsigned long LED_GROUND_BASES[4] = { GPIO_PORTE_BASE, GPIO_PORTA_BASE, GPIO_PORTD_BASE, GPIO_PORTD_BASE };
@@ -189,6 +187,8 @@ void button_pushed( unsigned long bx, unsigned long by )
 		{
 			cfg.buttons[index].playTime = STOP_PLAYING;
 			ledState[by][bx] = LED_NONE;
+			if ( trackOne == index ) trackOne = -1;
+			if ( trackTwo == index ) trackTwo = -1;
 		} else
 		{
 			ledState[by][bx] = LED_GREEN;
@@ -212,8 +212,9 @@ void button_released( unsigned long bx, unsigned long by )
 		{
 				cfg.buttons[index].playTime = STOP_PLAYING;
 				ledState[by][bx] = LED_NONE;
+				if ( trackOne == index ) trackOne = -1;
+				if ( trackTwo == index ) trackTwo = -1;
 		}
-
 	}
 }
 
@@ -221,6 +222,30 @@ void poll_interrupt( void )
 {
 
 	TimerIntClear(TIMER2_BASE, TIMER_TIMA_TIMEOUT);
+
+	// Update state if track reached end of file
+	if ( trackOne >= 0 && cfg.buttons[trackOne].playTime == STOP_PLAYING )
+	{
+		if ( cfg.buttons[trackOne].mode == MODE_LATCH ) // if latch, release button
+		{
+			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_NONE;
+			buttonState[ trackOne / 4 ][ trackOne % 4 ] = 0;
+		} else { // if hold, just turn off led
+			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_NONE;
+		}
+		trackOne = -1;
+	}
+	if ( trackTwo >= 0 && cfg.buttons[trackTwo].playTime == STOP_PLAYING )
+	{
+		if ( cfg.buttons[trackTwo].mode == MODE_LATCH ) // if latch, release button
+		{
+			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_NONE;
+			buttonState[ trackTwo / 4 ][ trackTwo % 4 ] = 0;
+		} else { // if hold, just turn off led
+			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_NONE;
+		}
+		trackTwo = -1;
+	}
 
 	// Switch off previous LED
 	GPIOPinWrite( LED_GROUND_BASES[lx], LED_GROUND_PINS[lx], HIGH ); // Ground High

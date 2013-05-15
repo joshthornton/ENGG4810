@@ -30,20 +30,16 @@
 // Local global variables
 unsigned long interruptCounter;
 static unsigned long processingCounter;
-static unsigned long delay;
-static unsigned long echo;
-static unsigned long delayFilePos;
-static unsigned long echoFilePos;
 static FIL buttonFiles[2];
-static button *buttons[2];
-static FIL inputWrite;
-static FIL inputRead;
-static FIL outputWrite;
-static FIL outputRead;
-static buffer outputBuffer;
 
 static int effects[2];
 static int effectParam[2][2];
+
+// For echo and delay
+static buffer outBuf;
+static buffer inBuf;
+static float echoAmount = 0.0f;
+static float delayAmount = 0.0f;
 
 static signed short outputBuf[MAX_LOOKAHEAD];
 static signed short delayBuf[MAX_LOOKAHEAD];
@@ -76,6 +72,17 @@ static char *files[NUM_BUTTONS] = {
 	"16.dat"
 };
 
+void load_set_delay( unsigned long size, float amount )
+{
+	delayAmount = amount;
+	buffer_set_size( &inBuf, size );
+}
+
+void load_set_echo( unsigned long size, float amount )
+{
+	echoAmount = amount;
+	buffer_set_size( &outBuf, size );
+}
 
 void load_generate_coeffs(int effect, int Fc, float Q)
 {
@@ -93,7 +100,8 @@ void load_init( void )
 	writeIndex = 0;
 	readIndex = 0;
 
-	buffer_init( &outputBuffer );
+	buffer_init( &inBuf );
+	buffer_init( &outBuf );
 
 	f_open( &inputWrite, "input.dat", FA_CREATE_ALWAYS | FA_WRITE );
 	f_open( &inputRead, "input.dat", FA_CREATE_ALWAYS | FA_READ );
@@ -111,79 +119,10 @@ void load_init( void )
 	b1->playTime = STOP_PLAYING;
 	b2->playTime = STOP_PLAYING;
 
-	//effect[0] = cfg.effectOne;
-	//effect[1] = cfg.effectTwo;
-
-	effects[0] = EFFECT_LOWPASS;
-	effectParam[0][0] = 50;
-	effectParam[0][1] = 10;
-
-	int cutOff = 3000;
-	float quality = 0.707f;
-
+	effect[0] = cfg.effectOne;
+	effect[1] = cfg.effectTwo;
 
 }
-
-//possibly should be this in the do work function
-signed short process( signed short input, signed short delay, signed short echo )
-{
-	return 1;
-}
-
-//think this should
-void push_output( signed short sample )
-{
-	outputBuf[writeIndex++] = sample;
-
-	writeIndex &= MASK;
-
-	//f_write( &outputWrite, &sample, 2, 0 );
-}
-
-int pushed = 0;
-
-void push_input( signed short sample )
-{
-	f_write( &inputWrite, &sample, 2, 0 );
-
-	if (pushed++ == 512)
-	{
-	f_sync(&inputWrite);
-	pushed = 0;
-	}
-}
-
-//not used atm
-signed short pop_output( void )
-{
-	signed short val;
-	buffer_read( &outputBuffer, &val, 1 );
-	return val;
-}
-
-signed short pop_delay( void )
-{
-	if ( processingCounter > delay )
-	{
-		signed short val;
-		f_read( &inputRead, &val, 2, 0 );
-		delayFilePos += 2;
-		return val;
-	}
-	return 0;
-}
-signed short pop_echo( void )
-{
-	if ( processingCounter > delay )
-	{
-		signed short val;
-		f_read( &outputRead, &val, 2, 0 );
-		echoFilePos += 2;
-		return val;
-	}
-	return 0;
-}
-
 
 void load_set_one( unsigned long index )
 {
@@ -212,20 +151,6 @@ void load_set_two( unsigned long index )
 
 	// Open file
 	FRESULT res = f_open( b2->fp, files[index], FA_OPEN_EXISTING | FA_READ );
-}
-
-void load_set_delay( unsigned long samples )
-{
-	unsigned long offset = delayFilePos + 2 * ( delay - samples );
-	delay = samples;
-	f_lseek( &inputRead, offset );
-	
-}
-void load_set_echo( unsigned long samples )
-{
-	unsigned long offset = delayFilePos + 2 * ( delay - samples );
-	echo = samples;
-	f_lseek( &inputRead, offset );
 }
 
 int i = 0;
@@ -273,12 +198,12 @@ void do_work( void )
 
 			res = f_read( b1->fp, &temp, 2, &read );
 
-			if ( read == 0 || res ) {
+			if ( read == 0 || res ) {	// End of file
 				if ( b1->isLooped ) {
-					b1->playTime = interruptCounter + 1; //( interruptCounter % b1->interruptModulo );
-					f_lseek(b1->fp, 0);
+					b1->playTime = interruptCounter + ( interruptCounter % b1->interruptModulo ); // start on next interval
+					f_lseek(b1->fp, 0); // seek back to start of file
 				} else {
-					b1->playTime = STOP_PLAYING;
+					b1->playTime = STOP_PLAYING; // buttons and leds will check this on next interrupt and update accordingly
 				}
 			}
 			input += temp >> 4;
@@ -292,7 +217,7 @@ void do_work( void )
 
 			if ( read == 0 || res ) {
 				if ( b2->isLooped ) {
-					b2->playTime = processingCounter + 1;
+					b2->playTime = processingCounter + ( interruptCounter % b2->interruptModulo );
 					f_lseek(b2->fp, 0);
 				} else {
 					b2->playTime = STOP_PLAYING;
@@ -301,7 +226,11 @@ void do_work( void )
 
 			input += temp >> 4;
 		}
-		//would it be worth checking if input = 0 and having a different return case?
+
+		// Save input for delay
+		buffer_push( &inBuf, input );
+
+		// would it be worth checking if input = 0 and having a different return case?
 		int i = 0;
 		for (i = 0; i < 2; i++)
 		{
@@ -321,13 +250,10 @@ void do_work( void )
 					prevOut = output;
 					break;
 				case EFFECT_DELAY:
-					//output = input + effectParam[i][0]*delayBuf[]
-					//delayBuf[ ] = input;
+					output = input + delayAmount * buffer_pop( &inBuf ); 
 					break;
 				case EFFECT_ECHO:
-					//output = input + effectParam[i][0]*delayBuf[]
-					//delayBuf[ ] = output;
-
+					output = input + echoAmount * buffer_pop( &outBuf ); 
 					break;
 				case EFFECT_DECI_BIT:
 					num = deci_y2 - deci_y1;
@@ -356,6 +282,9 @@ void do_work( void )
 			}
 
 		}
+
+		// Save output for echo
+		buffer_push( &outBuf, ouput );
 
 		outputBuf[writeIndex++] = output;
 

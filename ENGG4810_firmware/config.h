@@ -14,14 +14,14 @@
 #define ACTION_EFFECT_TWO	(2)
 
 #define EFFECT_NONE			(0)
-#define EFFECT_LOWPASS		(1)
-#define EFFECT_HIGHPASS		(2)
-#define EFFECT_BANDPASS		(4)
-#define EFFECT_NOTCH		(8)
-#define EFFECT_DELAY		(5)
-#define EFFECT_ECHO			(6)
-#define EFFECT_DECI_BIT		(7)
-#define EFFECT_BITWISE		(9)
+#define EFFECT_LOWPASS		(1 << 0)
+#define EFFECT_HIGHPASS		(1 << 1)
+#define EFFECT_BANDPASS		(1 << 2)
+#define EFFECT_NOTCH		(1 << 3)
+#define EFFECT_DELAY		(1 << 4)
+#define EFFECT_ECHO			(1 << 5)
+#define EFFECT_DECI_BIT		(1 << 6)
+#define EFFECT_BITWISE		(1 << 7)
 
 #define INTERRUPT_HERTZ		(44100)
 
