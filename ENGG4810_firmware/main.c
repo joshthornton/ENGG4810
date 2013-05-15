@@ -39,21 +39,7 @@
 #include "poll.h"
 
 #define EVER ;;
-
-#define LED_RED GPIO_PIN_1
-#define LED_BLUE GPIO_PIN_2
-#define LED_GREEN GPIO_PIN_3
-
-#define BUTTON_1 GPIO_PIN_0
-#define BUTTON_2 GPIO_PIN_4
-
-//BYTE buffer[2][4096];   /* file copy buffer */
-
 int buffNum = 0;
-
-
-
-
 extern unsigned long g_ulIdleTimeout;
 
 //****************************************************************************

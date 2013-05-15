@@ -48,7 +48,7 @@ typedef struct config {
 // Global config variable
 extern volatile config cfg;
 
-void config_init( config *c );
+void config_init( void );
 
 #endif
 

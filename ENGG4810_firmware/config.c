@@ -7,11 +7,11 @@ static const char *configFilePath = "config.engg4810";
 // Force creation of external symbol
 volatile config cfg;
 
-void config_init( config *c )
+void config_init( void )
 {
 
 	FIL fp;
 	WORD br;
 	f_open( &fp, configFilePath, FA_OPEN_EXISTING | FA_READ );
-	f_read( &fp, &cfg, sizeof( cfg ), &br );
+	f_read( &fp, (void *) &cfg, sizeof( cfg ), &br );
 }

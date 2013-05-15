@@ -28,10 +28,10 @@ unsigned long ledState[4][4];
 unsigned long buttonState[4][4];
 
 // Local file global variables
-static unsigned long index;
+static unsigned long trackIndex;
 static unsigned long lx, ly, bx, by;
-static unsigned long trackOne;
-static unsigned long trackTwo;
+static signed long trackOne;
+static signed long trackTwo;
 
 // LEDs
 static const unsigned long LED_GROUND_PERIPHS[4] = { SYSCTL_PERIPH_GPIOE, SYSCTL_PERIPH_GPIOA, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD };
@@ -68,7 +68,7 @@ void poll_init( void )
 	int i, j;
 	// Set state
 	lx = ly = bx = by = 0;
-	index = 0;
+	trackIndex = 0;
 	trackOne = -1;
 	trackTwo = -1;
 
@@ -144,11 +144,11 @@ void start_playing( unsigned long index )
 	cfg.buttons[index].isLooped = ( loop != 0 );
 	
 	// Start track
-	if ( index )
+	if ( trackIndex )
 	{
 		// Turn off 'third' track if currently playing
 		if ( cfg.buttons[trackOne].playTime < interruptCounter )
-			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_NONE;
+			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_OFF;
 		trackOne = index;
 		load_set_one( index );
 	}
@@ -156,13 +156,13 @@ void start_playing( unsigned long index )
 	{
 		// Turn off 'third' track if currently playing
 		if ( cfg.buttons[trackTwo].playTime < interruptCounter )
-			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_NONE;
+			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_OFF;
 		trackTwo = index;
 		load_set_two( index );
 	}
 		
 	// Update index
-	index = ( index + 1 ) % 2;
+	trackIndex = ( trackIndex + 1 ) % 2;
 }
 
 void button_pushed( unsigned long bx, unsigned long by )
@@ -186,7 +186,7 @@ void button_pushed( unsigned long bx, unsigned long by )
 		if ( cfg.buttons[index].playTime <= interruptCounter ) // Currently playing
 		{
 			cfg.buttons[index].playTime = STOP_PLAYING;
-			ledState[by][bx] = LED_NONE;
+			ledState[by][bx] = LED_OFF;
 			if ( trackOne == index ) trackOne = -1;
 			if ( trackTwo == index ) trackTwo = -1;
 		} else
@@ -211,7 +211,7 @@ void button_released( unsigned long bx, unsigned long by )
 		if ( cfg.buttons[index].mode == MODE_HOLD )
 		{
 				cfg.buttons[index].playTime = STOP_PLAYING;
-				ledState[by][bx] = LED_NONE;
+				ledState[by][bx] = LED_OFF;
 				if ( trackOne == index ) trackOne = -1;
 				if ( trackTwo == index ) trackTwo = -1;
 		}
@@ -228,10 +228,10 @@ void poll_interrupt( void )
 	{
 		if ( cfg.buttons[trackOne].mode == MODE_LATCH ) // if latch, release button
 		{
-			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_NONE;
+			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_OFF;
 			buttonState[ trackOne / 4 ][ trackOne % 4 ] = 0;
 		} else { // if hold, just turn off led
-			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_NONE;
+			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_OFF;
 		}
 		trackOne = -1;
 	}
@@ -239,10 +239,10 @@ void poll_interrupt( void )
 	{
 		if ( cfg.buttons[trackTwo].mode == MODE_LATCH ) // if latch, release button
 		{
-			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_NONE;
+			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_OFF;
 			buttonState[ trackTwo / 4 ][ trackTwo % 4 ] = 0;
 		} else { // if hold, just turn off led
-			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_NONE;
+			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_OFF;
 		}
 		trackTwo = -1;
 	}
