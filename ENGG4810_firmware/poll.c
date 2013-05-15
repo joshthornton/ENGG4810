@@ -17,6 +17,7 @@
 #include "poll.h"
 
 #define OUTPUT_HERTZ (400)
+#define TENTH_SEC (44100/10)
 
 #define HIGH	(0xFF)
 #define LOW		(0)
@@ -50,6 +51,11 @@ static const unsigned long BTN_POWER_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_
 static const unsigned long BTN_POWER_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTE_BASE, GPIO_PORTD_BASE, GPIO_PORTD_BASE };
 static const unsigned long BTN_POWER_PINS[4] = { GPIO_PIN_0, GPIO_PIN_5, GPIO_PIN_7, GPIO_PIN_6 };
 
+static const unsigned long LOOP_PERIPH = SYSCTL_PERIPH_GPIOB;
+static const unsigned long LOOP_BASE = GPIO_PORTB_BASE;
+static const unsigned long LOOP_PIN = GPIO_PIN_1;
+
+
 // Linear Potentiometers
 //static const unsigned long LINEAR_ADC_PERIPHS[4] = {};
 //static const unsigned long LINEAR_GPIO_PERIPHS[4] = {};
@@ -78,9 +84,8 @@ void poll_init( void )
 		 SysCtlPeripheralEnable( LED_GREEN_PERIPHS[i] );
 		 SysCtlPeripheralEnable( BTN_POWER_PERIPHS[i] );
 		 SysCtlPeripheralEnable( BTN_CHECK_PERIPHS[i] );
-		 //SysCtlPeripheralEnable( LINEAR_ADC_PERIPHS[i] );
-		 //SysCtlPeripheralEnable( LINEAR_GPIO_PERIPHS[i] );
 	}
+	SysCtlPeripheralEnable( LOOP_PERIPH );
 
 	// Unlock Registers
 	HWREG(GPIO_PORTD_BASE + GPIO_O_LOCK) = GPIO_LOCK_KEY_DD;
@@ -95,13 +100,21 @@ void poll_init( void )
 		GPIOPinTypeGPIOOutput( LED_RED_BASES[i], LED_RED_PINS[i] );
 		GPIOPinTypeGPIOOutput( LED_GREEN_BASES[i], LED_GREEN_PINS[i] );
 		GPIOPinTypeGPIOOutput( BTN_POWER_BASES[i], BTN_POWER_PINS[i] );
+		
+		// Apparently this helps brightness
+		GPIOPadConfigSet( LED_RED_BASES[i], LED_RED_PINS[i], GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPD ); // Pull down
+		GPIOPadConfigSet( LED_GREEN_BASES[i], LED_GREEN_PINS[i], GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPD ); // Pull down
 	}
 
 	// Configure all inputs
 	for ( i = 0; i < 4; ++i )
 	{
 		GPIOPinTypeGPIOInput( BTN_CHECK_BASES[i], BTN_CHECK_PINS[i] );
+
+		// Apparently this helps prevent erroneous input
+		GPIOPadConfigSet( BTN_CHECK_BASES[i], BTN_CHECK_PINS[i], GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPD ); // Pull down
 	}
+	GPIOPinTypeGPIOInput( LOOP_BASE, LOOP_PIN ); 
 
 	// Initialize LED ground high, button power low
 	for ( i = 0; i < 4; ++i )
@@ -109,12 +122,6 @@ void poll_init( void )
 		GPIOPinWrite( LED_GROUND_BASES[i], LED_GROUND_PINS[i], HIGH ); // Ground High
 		GPIOPinWrite( BTN_POWER_BASES[i], BTN_POWER_PINS[i], LOW ); // Power low
 	}
-
-	// Configure ADC
-	//for ( int i = 0; i < 4; ++i )
-	//{
-	//	MAP_GPIOPinTypeADC( LINEAR_BASES[i], LINEAR_PINS[i] );
-	//}
 
 	// Setup Interrupt
 
@@ -125,6 +132,72 @@ void poll_init( void )
 	ROM_TimerEnable(TIMER2_BASE, TIMER_A);
 	ROM_IntEnable(INT_TIMER2A);
 
+}
+
+void start_playing( unsigned long index )
+{
+	// Check loop button
+	unsigned long loop = GPIOPinRead( LOOP_BASE, LOOP_PIN );
+	cfg.buttons[index].isLooped = ( loop != 0 );
+	
+	// Start track
+	if ( index )
+		load_set_one( index );
+	else
+		load_set_two( index );
+		
+	// Update index
+	index = ( index + 1 ) % 2;
+}
+
+void button_pushed( unsigned long bx, unsigned long by )
+{
+	unsigned long index = bx * 4 + by;
+
+	// Record press time
+	buttonState[bx][by] = interruptCounter;
+	
+	// Three cases:
+	//	1. HOLD and NOT PLAYING		-> start playing, led red
+	//	2. LATCH and NOT PLAYING	-> start playing, led green
+	//	3. LATCH and PLAYING		-> stop playing, led off
+	// Set LED
+	if ( cfg.buttons[index].mode == MODE_HOLD )
+	{
+		ledState[by][bx] = LED_RED;
+		start_playing( index );
+	} else {
+
+		if ( cfg.buttons[index].playTime <= interruptCounter ) // Currently playing
+		{
+			cfg.buttons[index].playTime = STOP_PLAYING;
+			ledState[by][bx] = LED_NONE;
+		} else
+		{
+			ledState[by][bx] = LED_GREEN;
+			start_playing( index );
+		}
+	}
+}
+
+void button_released( unsigned long bx, unsigned long by )
+{
+	unsigned long index = bx * 4 + by;
+
+	// Ignore if very recent
+	if ( buttonState[bx][by] + TENTH_SEC < interruptCounter )
+	{
+		// Reset state
+		buttonState[bx][by] = 0;
+		
+		// Stop track if mode is hold
+		if ( cfg.buttons[index].mode == MODE_HOLD )
+		{
+				cfg.buttons[index].playTime = STOP_PLAYING;
+				ledState[by][bx] = LED_NONE;
+		}
+
+	}
 }
 
 void poll_interrupt( void )
@@ -162,36 +235,15 @@ void poll_interrupt( void )
 	GPIOPinWrite( BTN_POWER_BASES[bx], BTN_POWER_PINS[bx], HIGH ); // Power up button
 	for ( by = 0; by < 4; by++ ) {
 		unsigned long val = GPIOPinRead( BTN_CHECK_BASES[by], BTN_CHECK_PINS[by] ); // Check button
-		if ( val && !buttonState[bx][by] && (buttonState[bx][by] - interruptCounter) > 20000)
-		{
-			//UARTprintf("button: %d, %d\n", bx,by);
-			buttonState[bx][by] = interruptCounter;
-			ledState[by][bx] = LED_GREEN;
-
-
-			if (index == 0)
-			{
-				load_set_one(0);
-			}
-			else
-			{
-				load_set_two(1);
-			}
-			index = ( index + 1 ) % 2;
-		} else if ( !val ) {
-			if ( buttonState[bx][by] && cfg.buttons[0 /*bx*4 + by*/].mode == MODE_HOLD )
-			{
-				cfg.buttons[0 /*bx*4 + by*/].playTime = STOP_PLAYING;
-			}
-			buttonState[bx][by] = 0;
-			ledState[by][bx] = 0;
-		}
+		if ( val && !buttonState[bx][by] )
+			button_pushed( bx, by );
+		else if ( !val && buttonState[bx][by] )
+			button_released( bx, by );
 	}
 	GPIOPinWrite( BTN_POWER_BASES[bx], BTN_POWER_PINS[bx], LOW ); // Power up button
 
+	// Update button index
 	bx++;
 	if ( bx == 4 )
 		bx = 0;
-
-	// Check an ADC
 }

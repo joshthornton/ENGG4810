@@ -2,10 +2,11 @@ public class EQ extends SoftwareEffect {
 	
 	private double[] gains;
 	private final static int NUM_BANDS = 10;
-	private final static double qualityFactor = 1/Math.sqrt(2);
-	private final static int[] bands = { 31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000 };
-	private static double[][] alpha;
-	private static double[][] beta;
+	private final static int SAMPLE_RATE = 44100;
+	private final static double qualityFactor = 0.3; //1/Math.sqrt(2);
+	private final static double[] bands = { 31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000 };
+	private double[][] alpha;
+	private double[][] beta;
 	
 	public EQ( double[] gains ) {
 		this.gains = gains;
@@ -14,7 +15,20 @@ public class EQ extends SoftwareEffect {
 		beta = new double[NUM_BANDS][3];
 		
 		// calculate coefficients
-		
+		for ( int b = 0; b < NUM_BANDS; ++b )
+		{
+			double cutoff = 2 * Math.PI * ( bands[b] / SAMPLE_RATE);
+			double c = Math.cos( cutoff );
+			double a = Math.sin( cutoff ) / (2 * qualityFactor );
+			
+			alpha[b][0] = 1;
+			alpha[b][1] = ( -2 * c ) / ( 1 + a );
+			alpha[b][2] = ( 1 - a ) / ( 1 + a );
+			
+			beta[b][0] = ( a ) / ( 1 + a );
+			beta[b][1] = ( 0 ) / ( 1 + a );
+			beta[b][2] = ( -a ) / ( 1 + a );
+		}
 		
 	}
 
@@ -22,7 +36,6 @@ public class EQ extends SoftwareEffect {
 		short[] in = toShort(bytes);
 		short[] out = iir( in );
 		return fromShort( out );
-		
 	}
 	
 	public short[] iir( short[] in ) {
@@ -36,19 +49,27 @@ public class EQ extends SoftwareEffect {
             	out[band][i%3] =	beta[band][0] * in[i] +
             						beta[band][1] * in[i-1] +
             						beta[band][2] * in[i-2] -
-            						alpha[band][0] * out[band][(i-1)%3] -
-            						alpha[band][1] * out[band][(i-2)%3];
-            	combined[i] += out[band][i%3] * gains[band];
+            						alpha[band][1] * out[band][(i-1)%3] -
+            						alpha[band][2] * out[band][(i-2)%3];
+            	combined[i] += out[band][i%3] * gains[band] /*/ 2*/;
             }
             
             // Normalise
-            combined[i] += ( in[i] * 0.25 );
-            combined[i] *= 4;
+            //combined[i] += ( in[i] * 0.5 );
+            //combined[i] *= 2;
         }
         
         short[] shorts = new short[ combined.length ];
         for( int i = 0; i < combined.length; ++i )
-        	shorts[i] = (short)combined[i];
+        {
+        	if ( combined[i] > Short.MAX_VALUE ) {
+        		shorts[i] = Short.MAX_VALUE;
+        	} else if ( combined[i] < Short.MIN_VALUE ) {
+        		shorts[i] = Short.MIN_VALUE;
+        	} else {
+        		shorts[i] = (short)combined[i];
+        	}
+        }
         
         return shorts;
         

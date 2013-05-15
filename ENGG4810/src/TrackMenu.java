@@ -205,26 +205,26 @@ public class TrackMenu extends JPopupMenu {
 		
 		eq.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				JSlider h31 = new JSlider( -20, 50 );
-				JSlider h62 = new JSlider( -20, 50 );
-				JSlider h125 = new JSlider( -20, 50 );
-				JSlider h250 = new JSlider( -20, 50 );
-				JSlider h500 = new JSlider( -20, 50 );
-				JSlider h1k = new JSlider( -20, 50 );
-				JSlider h2k = new JSlider( -20, 50 );
-				JSlider h4k = new JSlider( -20, 50 );
-				JSlider h8k = new JSlider( -20, 50 );
-				JSlider h16k = new JSlider( -20, 50 );
-				h31.setValue( 0 );
-				h62.setValue( 0 );
-				h125.setValue( 0 );
-				h250.setValue( 0 );
-				h500.setValue( 0 );
-				h1k.setValue( 0 );
-				h2k.setValue( 0 );
-				h4k.setValue( 0 );
-				h8k.setValue( 0 );
-				h16k.setValue( 0 );
+				JSlider h31 = new JSlider( 0, 200 );
+				JSlider h62 = new JSlider( 0, 200 );
+				JSlider h125 = new JSlider( 0, 200 );
+				JSlider h250 = new JSlider( 0, 200 );
+				JSlider h500 = new JSlider( 0, 200 );
+				JSlider h1k = new JSlider( 0, 200 );
+				JSlider h2k = new JSlider( 0, 200 );
+				JSlider h4k = new JSlider( 0, 200 );
+				JSlider h8k = new JSlider( 0, 200 );
+				JSlider h16k = new JSlider( 0, 200 );
+				h31.setValue( 100 );
+				h62.setValue( 100 );
+				h125.setValue( 100 );
+				h250.setValue( 100 );
+				h500.setValue( 100 );
+				h1k.setValue( 100 );
+				h2k.setValue( 100 );
+				h4k.setValue( 100 );
+				h8k.setValue( 100 );
+				h16k.setValue( 100 );
 				final JComponent[] inputs = new JComponent[] {
 						new JLabel("31Hz:"),
 						h31,

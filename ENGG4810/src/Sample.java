@@ -151,6 +151,18 @@ public class Sample {
 		return samples;
 	}
 	
+	public void setPosition( double pos )
+	{
+		line.stop();
+		line.flush();
+		offset = (int)((bytes.length / 2 ) * pos) * 2;
+		oldFramePosition = line.getLongFramePosition() - offset;
+		canvas.setPlayhead( pos );
+		canvas.repaint();
+		if ( playing )
+			play();
+	}
+	
 	public byte[] getByteArray() {
 		return bytes;
 	}
@@ -205,16 +217,6 @@ public class Sample {
 	public void play() {
 		
 		stopThreads();
-		
-		try {
-			FileWriter f = new FileWriter(new File( "src/temp/test.data" ));
-			short[] s = toShort(bytes);
-			for( int i = 0; i < 8*(1<<10); ++i )
-				f.write( String.format("0x%x, ", s[i] ) );
-			f.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		
 		if ( playing && line != null ) {
 			offset = 0;

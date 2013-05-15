@@ -5,7 +5,7 @@
 static const char *configFilePath = "config.engg4810";
 
 // Force creation of external symbol
-config cfg;
+volatile config cfg;
 
 void config_init( config *c )
 {
