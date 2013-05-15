@@ -28,8 +28,11 @@ unsigned long ledState[4][4];
 unsigned long buttonState[4][4];
 
 // Local file global variables
-unsigned long index;
-unsigned long lx, ly, bx, by;
+static unsigned long index;
+static unsigned long lx, ly, bx, by;
+static unsigned long trackOne;
+static unsigned long trackTwo;
+
 
 
 // LEDs
@@ -68,6 +71,8 @@ void poll_init( void )
 	// Set state
 	lx = ly = bx = by = 0;
 	index = 0;
+	trackOne = -1;
+	trackTwo = -1;
 
 	// Default buttons and leds
 	for ( i = 0; i < 4; i++ )
@@ -142,9 +147,21 @@ void start_playing( unsigned long index )
 	
 	// Start track
 	if ( index )
+	{
+		// Turn off 'third' track if currently playing
+		if ( cfg.buttons[trackOne].playTime < interruptCounter )
+			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_NONE;
+		trackOne = index;
 		load_set_one( index );
+	}
 	else
+	{
+		// Turn off 'third' track if currently playing
+		if ( cfg.buttons[trackTwo].playTime < interruptCounter )
+			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_NONE;
+		trackTwo = index;
 		load_set_two( index );
+	}
 		
 	// Update index
 	index = ( index + 1 ) % 2;
