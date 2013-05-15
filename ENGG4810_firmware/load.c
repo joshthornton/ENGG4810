@@ -82,9 +82,6 @@ void load_generate_coeffs(int effect, int Fc, float Q)
 	generate_filter_coeffs(effect, Fc, Q, a, b);
 }
 
-
-
-
 void load_init( void )
 {
 	interruptCounter = 0;
@@ -130,8 +127,6 @@ void load_init( void )
 //possibly should be this in the do work function
 signed short process( signed short input, signed short delay, signed short echo )
 {
-
-
 	return 1;
 }
 
@@ -193,18 +188,14 @@ signed short pop_echo( void )
 void load_set_one( unsigned long index )
 {
 	b1 = &(cfg.buttons[index]);
-	b1->mode = MODE_HOLD;
-	b1->action = ACTION_EFFECT_NONE;
-	b1->loopInterval = 0; //whats this even for
-	b1->playTime = 0;
-	b1->isLooped = 1;
-	b1->interruptModulo = 50;
 
 	// Set beat interval play time
 	b1->playTime = interruptCounter + ( interruptCounter % b1->interruptModulo );
 
-	// Set file pointer
-	b1->fp = &(buttonFiles[index]);
+	// Setup to reuse file pointer 
+	b1->fp = &(buttonFiles[ 0 ]);
+
+	// Open file
 	FRESULT res = f_open( b1->fp, files[index], FA_OPEN_EXISTING | FA_READ );
 
 }
@@ -212,20 +203,14 @@ void load_set_one( unsigned long index )
 void load_set_two( unsigned long index )
 {
 	b2 = &(cfg.buttons[index]);
-
-	b2->mode = MODE_LATCH;
-	b2->action = ACTION_EFFECT_NONE;
-	b2->loopInterval = 0; //whats this even for
-	b2->playTime = 0;
-	b2->isLooped = 1;
-	b2->interruptModulo = 50;
-
-
+	
 	// Set beat interval play time
 	b2->playTime = interruptCounter + ( interruptCounter % b2->interruptModulo );
 
-	// Set file pointer
-	b2->fp = &(buttonFiles[index]);
+	// Setup to reuse file pointer
+	b2->fp = &(buttonFiles[ 1 ]);
+
+	// Open file
 	FRESULT res = f_open( b2->fp, files[index], FA_OPEN_EXISTING | FA_READ );
 }
 

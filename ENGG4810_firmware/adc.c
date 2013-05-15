@@ -24,6 +24,11 @@ unsigned char adcValues[4];
 
 #define FREQ 100
 
+#define NUM_LEVELS		(128.0f)
+#define FREQ_OFFSET		(20.0f)
+#define FREQ_GRADIENT	( (20000.0f-FREQ_OFFSET) / NUM_LEVELS )
+#define Q_GRADIENT		( 1.0f / NUM_LEVELS )
+
 void adc_init(void)
 {
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
@@ -76,17 +81,16 @@ void adc_interrupt(void)
 		temp[i] = temp[i] >> 5; // 7-bit number (128 steps)
 		if ( temp[i] != adcValues[i] )
 		{
-
-			load_generate_coeffs(EFFECT_LOWPASS, temp[3]*150, 0.707f);
-			/*if ((cfg.effectOne & COEFF_MASK) &&  (i < 2))
+			if ((cfg.effectOne & COEFF_MASK) &&  (i <= 1) ) // Effect One enabled and change is in effect one parameters
 			{
-				load_generate_coeffs(cfg.effectOne, temp[i] * 150 , 0.707f);
+				load_generate_coeffs( cfg.effectOne, temp[0] * FREQ_GRADIENT + FREQ_OFFSET , temp[1] * Q_GRADIENT );
 			}
 
-			if ((cfg.effectTwo & COEFF_MASK) && (i > 1))
+			if ((cfg.effectTwo & COEFF_MASK) && (i >= 2) ) // Effect Two enabled and change is in effect two parameters
 			{
-				load_generate_coeffs(cfg.effectOne, temp[i]*50, 0.707f);
-			}*/
+				load_generate_coeffs( cfg.effectTwo, temp[2] * FREQ_GRADIENT + FREQ_OFFSET , temp[3] * Q_GRADIENT );
+			}
+			
 			adcValues[i] = (unsigned char)temp[i];
 		}
 

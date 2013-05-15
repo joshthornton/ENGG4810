@@ -12,8 +12,6 @@ void config_init( config *c )
 
 	FIL fp;
 	WORD br;
-
-
 	f_open( &fp, configFilePath, FA_OPEN_EXISTING | FA_READ );
 	f_read( &fp, &cfg, sizeof( cfg ), &br );
 }

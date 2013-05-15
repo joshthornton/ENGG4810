@@ -161,6 +161,8 @@ main(void)
 		errorLoop("Didnt mount");
 	}
 
+	config_init(); // NOT TESTED!!!
+	
 	int i = 0;
 
 	test();
