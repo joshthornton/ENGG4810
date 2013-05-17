@@ -92,26 +92,12 @@ void load_generate_coeffs(int effect, int Fc, float Q)
 void load_init( void )
 {
 	interruptCounter = 0;
-	delay = 0;
-	echo = 0;
-	delayFilePos = 44100 * 2;
-	echoFilePos = 44100 * 2;
 
 	writeIndex = 0;
 	readIndex = 0;
 
 	buffer_init( &inBuf );
 	buffer_init( &outBuf );
-
-	f_open( &inputWrite, "input.dat", FA_CREATE_ALWAYS | FA_WRITE );
-	f_open( &inputRead, "input.dat", FA_CREATE_ALWAYS | FA_READ );
-	f_open( &outputWrite, "output.dat", FA_CREATE_ALWAYS | FA_WRITE );
-	f_open( &outputRead, "output.dat", FA_CREATE_ALWAYS | FA_READ );
-
-	f_lseek( &inputWrite, 44100 * 2 );
-	f_lseek( &inputRead, 44100 * 2 );
-	f_lseek( &outputWrite, 44100 * 2 );
-	f_lseek( &outputRead, 44100 * 2 );
 
 	// Set buttons to be first two buttons
 	load_set_one( 0 );
