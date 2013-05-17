@@ -34,34 +34,27 @@ static signed long trackOne;
 static signed long trackTwo;
 
 // LEDs
-static const unsigned long LED_GROUND_PERIPHS[4] = { SYSCTL_PERIPH_GPIOE, SYSCTL_PERIPH_GPIOA, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD };
-static const unsigned long LED_GROUND_BASES[4] = { GPIO_PORTE_BASE, GPIO_PORTA_BASE, GPIO_PORTD_BASE, GPIO_PORTD_BASE };
-static const unsigned long LED_GROUND_PINS[4] = { GPIO_PIN_4, GPIO_PIN_6, GPIO_PIN_2, GPIO_PIN_3 };
-static const unsigned long LED_RED_PERIPHS[4] = { SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF };
-static const unsigned long LED_RED_BASES[4] = { GPIO_PORTC_BASE, GPIO_PORTC_BASE, GPIO_PORTF_BASE, GPIO_PORTF_BASE };
-static const unsigned long LED_RED_PINS[4] = { GPIO_PIN_5, GPIO_PIN_4, GPIO_PIN_4, GPIO_PIN_3 };
-static const unsigned long LED_GREEN_PERIPHS[4] = { SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOC };
-static const unsigned long LED_GREEN_BASES[4] = { GPIO_PORTD_BASE, GPIO_PORTD_BASE, GPIO_PORTC_BASE, GPIO_PORTC_BASE };
-static const unsigned long LED_GREEN_PINS[4] = { GPIO_PIN_5, GPIO_PIN_4, GPIO_PIN_7, GPIO_PIN_6 }; //i changed the first two pins cause they were shorted to dacs spi
+static const unsigned long LED_GROUND_PERIPHS[4] = { SYSCTL_PERIPH_GPIOA, SYSCTL_PERIPH_GPIOE, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD };
+static const unsigned long LED_GROUND_BASES[4] = { GPIO_PORTA_BASE, GPIO_PORTE_BASE, GPIO_PORTD_BASE, GPIO_PORTD_BASE };
+static const unsigned long LED_GROUND_PINS[4] = { GPIO_PIN_6, GPIO_PIN_4, GPIO_PIN_2, GPIO_PIN_0 };
+static const unsigned long LED_RED_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOD };
+static const unsigned long LED_RED_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTC_BASE, GPIO_PORTC_BASE, GPIO_PORTD_BASE };
+static const unsigned long LED_RED_PINS[4] = { GPIO_PIN_3, GPIO_PIN_4, GPIO_PIN_6, GPIO_PIN_7 };
+static const unsigned long LED_GREEN_PERIPHS[4] = { SYSCTL_PERIPH_GPIOB, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOF };
+static const unsigned long LED_GREEN_BASES[4] = { GPIO_PORTB_BASE, GPIO_PORTF_BASE, GPIO_PORTC_BASE, GPIO_PORTF_BASE };
+static const unsigned long LED_GREEN_PINS[4] = { GPIO_PIN_2, GPIO_PIN_0, GPIO_PIN_7, GPIO_PIN_4 };
 
 // Buttons
-static const unsigned long BTN_CHECK_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOB, SYSCTL_PERIPH_GPIOB };
-static const unsigned long BTN_CHECK_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTB_BASE, GPIO_PORTB_BASE };
-static const unsigned long BTN_CHECK_PINS[4] = { GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_2, GPIO_PIN_3 };
-static const unsigned long BTN_POWER_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOE, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD };
-static const unsigned long BTN_POWER_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTE_BASE, GPIO_PORTD_BASE, GPIO_PORTD_BASE };
-static const unsigned long BTN_POWER_PINS[4] = { GPIO_PIN_0, GPIO_PIN_5, GPIO_PIN_7, GPIO_PIN_6 };
+static const unsigned long BTN_CHECK_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOE, SYSCTL_PERIPH_GPIOD, SYSCTL_PERIPH_GPIOD };
+static const unsigned long BTN_CHECK_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTE_BASE, GPIO_PORTD_BASE, GPIO_PORTD_BASE };
+static const unsigned long BTN_CHECK_PINS[4] = { GPIO_PIN_1, GPIO_PIN_5, GPIO_PIN_3, GPIO_PIN_1 };
+static const unsigned long BTN_POWER_PERIPHS[4] = { SYSCTL_PERIPH_GPIOF, SYSCTL_PERIPH_GPIOB, SYSCTL_PERIPH_GPIOC, SYSCTL_PERIPH_GPIOD };
+static const unsigned long BTN_POWER_BASES[4] = { GPIO_PORTF_BASE, GPIO_PORTB_BASE, GPIO_PORTC_BASE, GPIO_PORTD_BASE };
+static const unsigned long BTN_POWER_PINS[4] = { GPIO_PIN_2, GPIO_PIN_3, GPIO_PIN_5, GPIO_PIN_6 };
 
 static const unsigned long LOOP_PERIPH = SYSCTL_PERIPH_GPIOB;
 static const unsigned long LOOP_BASE = GPIO_PORTB_BASE;
 static const unsigned long LOOP_PIN = GPIO_PIN_1;
-
-
-// Linear Potentiometers
-//static const unsigned long LINEAR_ADC_PERIPHS[4] = {};
-//static const unsigned long LINEAR_GPIO_PERIPHS[4] = {};
-//static const unsigned long LINEAR_BASES[4] = {};
-//static const unsigned long LINEAR_PINS[4] = {};
 
 void poll_init( void )
 {
