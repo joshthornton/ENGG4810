@@ -2,7 +2,7 @@
 #include "third_party/fatfs/src/ff.h"
 
 // Constants
-static const char *configFilePath = "config.engg4810";
+static const char *configFilePath = "cfg.cfg";
 
 // Force creation of external symbol
 volatile config cfg;
