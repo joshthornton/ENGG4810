@@ -203,10 +203,12 @@ void power_on (void)
      * Set the SSI output pins to 4MA drive strength and engage the
      * pull-up on the receive line.
      */
-    ROM_GPIOPadConfigSet(SDC_GPIO_PORT_BASE, SDC_SSI_RX, GPIO_STRENGTH_4MA,
+    ROM_GPIOPadConfigSet(SDC_GPIO_PORT_BASE, SDC_SSI_RX, GPIO_STRENGTH_8MA,
                          GPIO_PIN_TYPE_STD_WPU);
     ROM_GPIOPadConfigSet(SDC_GPIO_PORT_BASE, SDC_SSI_CLK | SDC_SSI_TX | SDC_SSI_FSS,
-                         GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD);
+                         GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+
+
 
     /* Configure the SSI0 port */
     ROM_SSIConfigSetExpClk(SDC_SSI_BASE, ROM_SysCtlClockGet(),

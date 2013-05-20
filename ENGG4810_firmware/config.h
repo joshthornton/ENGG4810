@@ -6,8 +6,8 @@
 
 #define NUM_BUTTONS 		(16)
 
-#define MODE_LATCH 			(0)
-#define MODE_HOLD 			(1)
+#define MODE_LATCH 			(1)
+#define MODE_HOLD 			(0)
 
 #define ACTION_EFFECT_NONE	(0)
 #define ACTION_EFFECT_ONE	(1)
@@ -28,6 +28,7 @@
 #define COEFF_MASK  		(EFFECT_LOWPASS | EFFECT_HIGHPASS | EFFECT_BANDPASS | EFFECT_NOTCH)
 
 typedef struct button {
+	unsigned long index;				// the number button that it is
 	unsigned long mode;					// Latch or Hold
 	unsigned long action;				// FN Button Action
 	unsigned long loopInterval;			// User specified loop interval

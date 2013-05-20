@@ -12,11 +12,12 @@ void load_set_one( unsigned long index );
 void load_set_two( unsigned long index );
 void load_set_delay( unsigned long size, float amount );
 void load_set_echo( unsigned long size, float amount );
+void load_set_params(unsigned long effect, unsigned long param1, unsigned long param2);
 
 void do_work( void );
 void test (void);
 
 extern unsigned long interruptCounter;
-void load_generate_coeffs(int effect, int Fc, float Q);
+void load_generate_coeffs(int index, int effect, int Fc, float Q);
 
 #endif
