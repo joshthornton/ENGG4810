@@ -364,7 +364,10 @@ USBDMSCStorageOpen(unsigned long ulDrive)
     //
     // Initialize the drive if it is present.
     //
+
+
     ulTemp = disk_initialize(0);
+
 
     if(ulTemp == RES_OK)
     {

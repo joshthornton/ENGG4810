@@ -117,8 +117,9 @@ FRESULT res;         /* FatFs function common result code */
 UINT br, bw;
 
 
-extern int transfer;;
-
+extern int transfer;
+BYTE buf2[30];
+FIL fp;
 //****************************************************************************
 //
 // This is the main loop that runs the application.
@@ -130,11 +131,15 @@ main(void)
 	ROM_FPULazyStackingEnable();
 
     //80 Mhz
+
     SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN);
 
     ROM_SysTickPeriodSet(ROM_SysCtlClockGet() / SYSTICKS_PER_SECOND);
     ROM_SysTickIntEnable();
     ROM_SysTickEnable();
+    dac_init();
+
+
 
     msc_init();
     composite_device_init();
@@ -142,29 +147,29 @@ main(void)
     disable_msc();
     adc_init();
 
+    /*
+      Connections for the little birdy SD card adapter
+      D3 = Chip select = PA3
+	  CMD = MOSI = PA5
+	  CLK = CLK = PA2
+	  D0 = MISO = PA4
+     */
+
 	if(f_mount(0, &g_sFatFs) != FR_OK)
 	{
 		errorLoop("Didnt mount");
 	}
 
-	config_init(); // NOT TESTED!!!
-	
-	int i = 0;
+	FRESULT j =  f_open(&fp, "cfg.cfg", FA_OPEN_EXISTING | FA_READ);
+    FRESULT res = f_read(&fp, (void *)&cfg, sizeof cfg, &br);
 
-	test();
-
-	//load_init();
-
-   // for (i = 0; i < 8000; i++)
-	//	do_work();
-
-
+	load_init();
 	dac_init();
-	//poll_init();
+	poll_init();
 	ROM_IntMasterEnable();
 
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-	GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_3);
+	//SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+	//GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_3);
 
 	while(1)
     {

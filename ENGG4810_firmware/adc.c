@@ -25,11 +25,6 @@ unsigned char adcValues[4];
 
 #define FREQ 100
 
-#define NUM_LEVELS		(128.0f)
-#define FREQ_OFFSET		(20.0f)
-#define FREQ_GRADIENT	( (20000.0f-FREQ_OFFSET) / NUM_LEVELS )
-#define Q_GRADIENT		( 1.0f / NUM_LEVELS )
-#define SIZE_GRADIENT	( BUFFER_SIZE / NUM_LEVELS )
 
 void adc_init(void)
 {
@@ -64,6 +59,11 @@ void adc_init(void)
 	//May be useful:
 	//SysCtlADCSpeedGet();
 
+	adcValues[0] = 0;
+	adcValues[1] = 0;
+	adcValues[2] = 0;
+	adcValues[3] = 0;
+
 	ADCIntClear(ADC0_BASE, 1);
 	ADCIntEnable(ADC0_BASE, 1);
 	IntEnable(INT_ADC0SS1);
@@ -78,29 +78,18 @@ void adc_interrupt(void)
 	ADCSequenceDataGet(ADC0_BASE, 1, temp);
 	ADCIntClear(ADC0_BASE, 1);
 
-	for ( i = 3; i < 4; i++ )
+	for ( i = 0; i < 4; i++ )
 	{
 		temp[i] = temp[i] >> 5; // 7-bit number (128 steps)
-		if ( temp[i] != adcValues[i] )
+		if (temp[i] > (adcValues[i] + 2) || temp[i] < (adcValues[i] - 2)) // temp[i] != adcValues[i] )
 		{
-
 			if ( i <= 2 ) // Effect one parameters changed
 			{
-				if ( cfg.effectOne & COEFF_MASK )
-					load_generate_coeffs( cfg.effectOne, temp[0] * FREQ_GRADIENT + FREQ_OFFSET , temp[1] * Q_GRADIENT );
-				else if ( cfg.effectOne == EFFECT_DELAY )
-					load_set_delay( temp[0] * SIZE_GRADIENT, temp[1] * Q_GRADIENT ); 
-				else if ( cfg.effectOne == EFFECT_ECHO )
-					load_set_echo( temp[0] * SIZE_GRADIENT, temp[1] * Q_GRADIENT ); 
+				load_set_params(0, temp[0], temp[1]);
 
 			} else { // Effect two parameters changed
 
-				if ( cfg.effectTwo & COEFF_MASK )
-					load_generate_coeffs( cfg.effectTwo, temp[2] * FREQ_GRADIENT + FREQ_OFFSET , temp[3] * Q_GRADIENT );
-				else if ( cfg.effectTwo == EFFECT_DELAY )
-					load_set_delay( temp[2] * SIZE_GRADIENT, temp[3] * Q_GRADIENT ); 
-				else if ( cfg.effectTwo == EFFECT_ECHO )
-					load_set_echo( temp[2] * SIZE_GRADIENT, temp[3] * Q_GRADIENT ); 
+				load_set_params(0, temp[2], temp[3]);
 			}
 			
 			adcValues[i] = (unsigned char)temp[i];

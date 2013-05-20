@@ -54,7 +54,7 @@ static const unsigned long BTN_POWER_PINS[4] = { GPIO_PIN_2, GPIO_PIN_3, GPIO_PI
 
 static const unsigned long LOOP_PERIPH = SYSCTL_PERIPH_GPIOB;
 static const unsigned long LOOP_BASE = GPIO_PORTB_BASE;
-static const unsigned long LOOP_PIN = GPIO_PIN_1;
+static const unsigned long LOOP_PIN = GPIO_PIN_0;
 
 void poll_init( void )
 {
@@ -110,7 +110,8 @@ void poll_init( void )
 		// Apparently this helps prevent erroneous input
 		GPIOPadConfigSet( BTN_CHECK_BASES[i], BTN_CHECK_PINS[i], GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPD ); // Pull down
 	}
-	GPIOPinTypeGPIOInput( LOOP_BASE, LOOP_PIN ); 
+	GPIOPinTypeGPIOInput( LOOP_BASE, LOOP_PIN );
+	GPIOPadConfigSet( LOOP_BASE, LOOP_PIN, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPD ); // Pull down
 
 	// Initialize LED ground high, button power low
 	for ( i = 0; i < 4; ++i )
@@ -134,22 +135,36 @@ void start_playing( unsigned long index )
 {
 	// Check loop button
 	unsigned long loop = GPIOPinRead( LOOP_BASE, LOOP_PIN );
-	cfg.buttons[index].isLooped = ( loop != 0 );
+	cfg.buttons[index].isLooped = ( loop == 0 );
 	
+	if (trackOne == -1 && trackTwo >= 0)
+	{
+		trackIndex = 0;
+	} else if (trackTwo == -1 && trackOne >= 0)
+	{
+		trackIndex = 1;
+	}
+
 	// Start track
-	if ( trackIndex )
+	if ( !trackIndex )
 	{
 		// Turn off 'third' track if currently playing
-		if ( cfg.buttons[trackOne].playTime < interruptCounter )
+		if ( trackOne >= 0 && cfg.buttons[trackOne].playTime <= interruptCounter )
+		{
+			cfg.buttons[ trackOne ].playTime = STOP_PLAYING;
 			ledState[ trackOne % 4 ][ trackOne / 4 ] = LED_OFF;
+		}
 		trackOne = index;
 		load_set_one( index );
 	}
 	else
 	{
 		// Turn off 'third' track if currently playing
-		if ( cfg.buttons[trackTwo].playTime < interruptCounter )
+		if ( trackTwo >= 0 && cfg.buttons[trackTwo].playTime <= interruptCounter )
+		{
+			cfg.buttons[ trackTwo ].playTime = STOP_PLAYING;
 			ledState[ trackTwo % 4 ][ trackTwo / 4 ] = LED_OFF;
+		}
 		trackTwo = index;
 		load_set_two( index );
 	}

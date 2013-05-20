@@ -8,7 +8,6 @@ CMD_SRCS += \
 
 C_SRCS += \
 ../adc.c \
-../buffer.c \
 ../config.c \
 ../dac.c \
 ../filterGen.c \
@@ -23,7 +22,6 @@ C:/CMSIS/CMSIS/DSP_Lib/Examples/Common/Source/math_helper.c \
 
 OBJS += \
 ./adc.obj \
-./buffer.obj \
 ./config.obj \
 ./dac.obj \
 ./filterGen.obj \
@@ -38,7 +36,6 @@ OBJS += \
 
 C_DEPS += \
 ./adc.pp \
-./buffer.pp \
 ./config.pp \
 ./dac.pp \
 ./filterGen.pp \
@@ -53,7 +50,6 @@ C_DEPS += \
 
 C_DEPS__QUOTED += \
 "adc.pp" \
-"buffer.pp" \
 "config.pp" \
 "dac.pp" \
 "filterGen.pp" \
@@ -68,7 +64,6 @@ C_DEPS__QUOTED += \
 
 OBJS__QUOTED += \
 "adc.obj" \
-"buffer.obj" \
 "config.obj" \
 "dac.obj" \
 "filterGen.obj" \
@@ -83,7 +78,6 @@ OBJS__QUOTED += \
 
 C_SRCS__QUOTED += \
 "../adc.c" \
-"../buffer.c" \
 "../config.c" \
 "../dac.c" \
 "../filterGen.c" \
