@@ -111,6 +111,7 @@ public class MainFrame extends JFrame {
 				JFileChooser fileChooser = new JFileChooser(".");
 				
 				//Displaying the file chooser
+				fileChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
 			    int status = fileChooser.showSaveDialog(that);
 			    
 			    if (status == JFileChooser.APPROVE_OPTION) {
@@ -118,27 +119,20 @@ public class MainFrame extends JFrame {
 			    		
 			    		
 			    		//Getting the selected file
-				    	File selectedFile = fileChooser.getSelectedFile();
+				    	File folder = fileChooser.getSelectedFile();
 				    	
-				    	//Checking for correct file extension
-				    	if (!selectedFile.getName().endsWith(".engg4810")){ 
-				    		selectedFile = new File(selectedFile.getAbsolutePath() 
-				    				+".engg4810"); 
-				    	}
+				    	File configFile = new File( folder.getAbsolutePath() + "/cfg.cfg" ); 
+				    	File[] buttonFiles = new File[16];
 				    	
 				    	try {
-				    		
-				    		config.writeStructConfig( selectedFile );
-				    		
-				    		/*
-				    		FileWriter writer = new FileWriter( selectedFile );
-				    		Gson gson = new Gson();
-				    		String test = gson.toJson( config, Configuration.class );
-					    	writer.write( test );
-					    	writer.close();
-					    	*/
-					    	
-					    	
+				    		configFile.createNewFile();
+				    		for ( int i = 0; i < 16; ++i )
+					    	{
+					    		buttonFiles[i] = new File( folder.getAbsolutePath() + "/" + (i+1) + ".dat" );
+					    		buttonFiles[i].createNewFile();
+					    	}
+				    		config.writeStructConfig( configFile );
+				    		tracks.writeData( buttonFiles );
 					    	
 				    	} catch( IOException ex ) {
 				    		throw new InvalidFileException( ex );

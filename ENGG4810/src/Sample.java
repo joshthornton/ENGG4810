@@ -1,5 +1,5 @@
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -151,18 +151,6 @@ public class Sample {
 		return samples;
 	}
 	
-	public void setPosition( double pos )
-	{
-		line.stop();
-		line.flush();
-		offset = (int)((bytes.length / 2 ) * pos) * 2;
-		oldFramePosition = line.getLongFramePosition() - offset;
-		canvas.setPlayhead( pos );
-		canvas.repaint();
-		if ( playing )
-			play();
-	}
-	
 	public byte[] getByteArray() {
 		return bytes;
 	}
@@ -218,20 +206,19 @@ public class Sample {
 		
 		stopThreads();
 		
-		if ( playing && line != null ) {
-			offset = 0;
-			oldFramePosition = line.getLongFramePosition();
-		}
-		
 		playing = true;
 		active = true;
 		line.start();
 		
 		lineThread = new Thread(new Runnable() {
 			public void run() {
-				int temp = line.write(bytes, offset, bytes.length - offset );
+				line.write(bytes, offset, bytes.length - offset );
 				line.drain();
 				active = false;
+				pause();
+				back();
+				//oldFramePosition = line.getFramePosition();
+				//offset = line.getFramePosition() * 2;
 			}
 		});
         lineThread.setDaemon(true);
@@ -267,6 +254,17 @@ public class Sample {
 		playhead();
 	}
 	
+	public void setPosition( double pos )
+	{
+		line.stop();
+		line.flush();
+		offset = (int)((bytes.length / 2 ) * pos) * 2;
+		oldFramePosition = line.getFramePosition() - ( offset / 2 );
+		playhead();
+		if ( playing )
+			play();
+	}
+	
 	private void stopThreads() {
 		if (lineThread != null) {
 			try {
@@ -292,7 +290,7 @@ public class Sample {
 	}
 	
 	public void cutLeft() {
-		int start = line.getFramePosition();
+		int start = (int)( line.getFramePosition() - oldFramePosition );
 		int end = bytes.length / 2;
 		trim( start, end );
 		setup();
@@ -300,9 +298,9 @@ public class Sample {
 	
 	public void cutRight() {
 		int start = 0;
-		int end = line.getFramePosition();
+		int end = (int)( line.getFramePosition() - oldFramePosition );
 		trim( start, end );
-		updateCanvas();
+		setup();
 	}
 	
 	private void trim( int start, int end ) {
@@ -316,14 +314,20 @@ public class Sample {
 		bytes = temp;
 	}
 	
-	private short[] toShort( byte[] bytes ) {
-		short[] shorts = new short[bytes.length / 2];
-		for( int i = 0; i < shorts.length; ++i )
+	public void writeData( File f ) throws IOException
+	{
+		byte[] out = new byte[ bytes.length ];
+		for ( int i = 0; i < bytes.length; i += 2 )
 		{
-			short lower = (short)(((short)bytes[i*2])&0x00FF);
-			short higher = (short)((((short)bytes[i*2+1])<<8)&0xFF00);
-			shorts[i] = (short)(lower|higher);
+			short lower = (short)(((short)bytes[i])&0x00FF);
+			short higher = (short)((((short)bytes[i+1])<<8)&0xFF00);
+			short both = (short)(lower|higher);
+			both = (short)(both);
+			out[i] = (byte)(both);
+			out[i+1] = (byte)(both>>8);
 		}
-		return shorts;
+		
+		FileOutputStream s = new FileOutputStream( f );
+		s.write( out );
 	}
 }

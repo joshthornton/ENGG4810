@@ -1,6 +1,8 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -24,6 +26,12 @@ public class TrackPanel extends JPanel {
 			tracks[i] = new Track();
 			this.add( tracks[i] );
 		}
+	}
+	
+	public void writeData( File[] f ) throws IOException
+	{
+		for ( int i = 0; i < 16; ++i )
+			tracks[i].writeData( f[i] );
 	}
 
 }

@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -134,6 +135,12 @@ public class Track extends JPanel {
 	public void pitchshift(int factor ) {
 		if ( factor != 0 )
 			sample.applyEffect( new PitchShift( factor ) );
+	}
+	
+	public void writeData( File f ) throws IOException
+	{
+		if ( sample != null )
+			sample.writeData( f );
 	}
 	
 }
