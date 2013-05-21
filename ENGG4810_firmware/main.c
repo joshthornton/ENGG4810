@@ -103,14 +103,6 @@ SysTickHandler(void)
 }
 
 
-void errorLoop(const char *pcStr)
-{
-	while(1)
-	{
-		CommandPrint(pcStr);
-		CommandPrint("\r\n");
-	}
-}
 FIL fsrc, fdst;      /* file objects */
 
 FRESULT res;         /* FatFs function common result code */
@@ -137,14 +129,9 @@ main(void)
     ROM_SysTickPeriodSet(ROM_SysCtlClockGet() / SYSTICKS_PER_SECOND);
     ROM_SysTickIntEnable();
     ROM_SysTickEnable();
+
     dac_init();
-
-
-
     msc_init();
-    composite_device_init();
-    SerialInit();
-    disable_msc();
     adc_init();
 
     /*
@@ -157,7 +144,7 @@ main(void)
 
 	if(f_mount(0, &g_sFatFs) != FR_OK)
 	{
-		errorLoop("Didnt mount");
+		//errorLoop("Didnt mount");
 	}
 
 	FRESULT j =  f_open(&fp, "cfg.cfg", FA_OPEN_EXISTING | FA_READ);
@@ -168,12 +155,8 @@ main(void)
 	poll_init();
 	ROM_IntMasterEnable();
 
-	//SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-	//GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_3);
-
 	while(1)
     {
-    	SerialMain();
     	do_work();
     }
 

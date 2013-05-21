@@ -23,11 +23,16 @@
 #include "config.h"
 
 #define MAX_LOOKAHEAD (8192)
+#define DELAY_LENGTH  (4096)
 #define MASK 0x1FFF
+#define DELAY_MASK 0xFFF
 #define NUM_LEVELS		(128.0f)
-#define FREQ_OFFSET		(20.0f)
-#define FREQ_GRADIENT	( (20000.0f-FREQ_OFFSET) / NUM_LEVELS )
+#define FREQ_OFFSET_LP	    (800.0f)
+#define FREQ_OFFSET_HP  (0.0f)
+#define FREQ_GRADIENT_LP	( (20000.0f-FREQ_OFFSET_LP) / NUM_LEVELS )
+#define FREQ_GRADIENT_HP	( (7500.0f-FREQ_OFFSET_HP) / NUM_LEVELS )
 #define Q_GRADIENT		( 1.0f / NUM_LEVELS )
+#define Q_OFFSET		(0.0f)
 #define SIZE_GRADIENT	( BUFFER_SIZE / NUM_LEVELS )
 
 // Global global variables
@@ -40,13 +45,14 @@ static FIL buttonFiles[2];
 static int effects[2];
 static int effectParam[2][2];
 
-// For echo and delay
-static buffer outBuf;
-static buffer inBuf;
 static float echoAmount = 0.0f;
 static float delayAmount = 0.0f;
 
 static signed short outputBuf[MAX_LOOKAHEAD];
+static signed short delayBuf[DELAY_LENGTH]; //also used for echo
+
+static int delayWriteIndex;
+static int delayReadIndex;
 
 static int writeIndex;
 static int readIndex;
@@ -59,6 +65,10 @@ float b_1[3];
 
 float a_2[3];
 float b_2[3];
+
+static const unsigned long TEMPO_PERIPH = SYSCTL_PERIPH_GPIOA;
+static const unsigned long TEMPO_BASE = GPIO_PORTA_BASE;
+static const unsigned long TEMPO_PIN = GPIO_PIN_7;
 
 static char *files[NUM_BUTTONS] = {
 	"1.dat",
@@ -79,56 +89,19 @@ static char *files[NUM_BUTTONS] = {
 	"16.dat"
 };
 
-// Set the circular buffer size.
-// Effectively delay/echo time
-void buffer_set_size( buffer * b, unsigned long size )
-{
-	b->size = ( size < BUFFER_SIZE ) ? size : BUFFER_SIZE;
-}
+int deciCount = 1;
 
-// Always succeeds
-// will overwrite value b->size values ago
-void buffer_push( buffer *b, signed short val )
-{
-	b->b[b->start] = val;
-	b->start = ( b->start + 1 ) % b->size;
-}
-
-// Always succeeds
-// will return the oldest value within b->size
-signed short buffer_pop( buffer *b )
-{
-	return b->b[ ( b->start + 1 ) % b->size ];
-}
-
-void buffer_init( buffer *b )
-{
-	unsigned long i;
-	b->start = 0;
-	b->length = 0;
-	b->size = 0;
-
-	// Initialize to zero
-	for ( i = 0; i < BUFFER_SIZE; ++i )
-		b->b[i] = 0;
-}
-
-void load_set_delay( unsigned long size, float amount )
-{
-	delayAmount = amount;
-	//buffer_set_size( &inBuf, size );
-}
-
-void load_set_echo( unsigned long size, float amount )
-{
-	echoAmount = amount;
-	//buffer_set_size( &outBuf, size );
-}
+signed short deci_y1 = 0;
+signed short deci_y2 = 0;
 
 void load_set_params(unsigned long effect, unsigned long param1, unsigned long param2)
 {
 	effectParam[effect][0] = param1;
 	effectParam[effect][1] = param2;
+	signed short a;
+	signed short b;
+	float Fc;
+	float Q;
 
 	switch (effects[effect])
 	{
@@ -136,27 +109,76 @@ void load_set_params(unsigned long effect, unsigned long param1, unsigned long p
 		case EFFECT_HIGHPASS:
 		case EFFECT_BANDPASS:
 		case EFFECT_NOTCH:
-			load_generate_coeffs(effect, effects[effect], param1 * FREQ_GRADIENT + FREQ_OFFSET , param2 * Q_GRADIENT );
+
+			if (effects[effect] == EFFECT_LOWPASS)
+			{
+				Fc = ((float) param1) * FREQ_GRADIENT_LP + FREQ_OFFSET_LP;
+			} else
+			{
+				Fc = ((float) param1) * FREQ_GRADIENT_HP + FREQ_OFFSET_HP;
+			}
+
+			Q =  ( param2 ) * Q_GRADIENT + Q_OFFSET;
+
+			load_generate_coeffs(effect, effects[effect], (int)Fc, Q);
 			break;
 		case EFFECT_DELAY:
+			delayReadIndex = (delayWriteIndex - (param1 << 5)) % DELAY_LENGTH; //just in case it gets too high
+			delayAmount = param2/(128.0f);
 			break;
 		case EFFECT_ECHO:
+			delayReadIndex = (delayWriteIndex - (param1 << 5)) % DELAY_LENGTH; //just in case it gets too high
+			echoAmount = param2/(256.0f);
 			break;
 		case EFFECT_DECI_BIT:
+			deciCount = 1;
+
+			deci_y1 = 0;
+			deci_y2 = 0;
+			effectParam[effect][1] = param2 + 1;// << 5;
+			effectParam[effect][0] = param1 << 3;
 			break;
 		case EFFECT_BITWISE:
+			a = (param1 - 64)*512;
+			b = (param2 - 64)*512;
+
+			effectParam[effect][0] = a;
+			effectParam[effect][1] = b;
+			break;
+
+		default:
 			break;
 	}
 }
 
 
+signed short prevIn_1 = 0;
+signed short prevIn2_1 = 0;
+signed short prevOut_1 = 0;
+signed short prevOut2_1 = 0;
+
+signed short prevIn_2 = 0;
+signed short prevIn2_2 = 0;
+signed short prevOut_2 = 0;
+signed short prevOut2_2 = 0;
 
 void load_generate_coeffs(int index, int effect, int Fc, float Q)
 {
-	if (index == 0)
+	if (index == 0) {
+		prevIn_1 = 0;
+		prevIn2_1 = 0;
+		prevOut_1 = 0;
+		prevOut2_1 = 0;
 		generate_filter_coeffs(effect, Fc, Q, a_1, b_1);
-	else
+	}
+	else {
+
+		prevIn_2 = 0;
+		prevIn2_2 = 0;
+		prevOut_2 = 0;
+		prevOut2_2 = 0;
 		generate_filter_coeffs(effect, Fc, Q, a_2, b_2);
+	}
 
 }
 
@@ -166,7 +188,13 @@ void load_init( void )
 
 	writeIndex = 0;
 	readIndex = 0;
+	delayWriteIndex = 0;
+	delayReadIndex = 0;
 
+	load_generate_coeffs( 0, 1, 4000, 0.707 );
+	cfg.effectOne = EFFECT_ECHO;
+	cfg.effectTwo = EFFECT_LOWPASS;
+	//load_generate_coeffs( 0, 0, 10000, 0.707 );
 	//buffer_init( &inBuf );
 	//buffer_init( &outBuf );
 
@@ -178,6 +206,10 @@ void load_init( void )
 
 	effects[0] = cfg.effectOne;
 	effects[1] = cfg.effectTwo;
+	SysCtlPeripheralEnable( TEMPO_PERIPH );
+	GPIOPinTypeGPIOOutput(TEMPO_BASE, TEMPO_PIN);
+
+	GPIOPadConfigSet( TEMPO_BASE, TEMPO_PIN, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU ); // Pull down
 
 }
 
@@ -188,6 +220,7 @@ void load_set_one( unsigned long index )
 
 	if (b1 == b2)
 		b2 = NULL;
+
 	// Set beat interval play time
 	b1->playTime = interruptCounter + ( interruptCounter % b1->interruptModulo );
 
@@ -208,12 +241,10 @@ void load_set_two( unsigned long index )
 	b2->fp = NULL;
 }
 
-
 void playback_interrupt( void )
 {
 	//GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3, 0xFF);
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-	static int myval = 0;
 	//char lower = (char)(i&0x00FF);
 	//char upper = (char)((i >> 8)&0x00FF);
 
@@ -223,7 +254,16 @@ void playback_interrupt( void )
 	SSIDataPut( SSI2_BASE, outputBuf[readIndex++]); // Write Value
 
 	//while( SSIBusy( SSI2_BASE ) ); //output
-	//GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_5, 0xFF);
+	//
+	static unsigned long pinOn = 0xFF;
+
+	if ((interruptCounter % cfg.bpm) == 0)
+	{
+		GPIOPinWrite(TEMPO_BASE, TEMPO_PIN, pinOn);
+		pinOn = ~pinOn;
+	}
+
+	GPIOPinWrite(TEMPO_BASE, TEMPO_PIN, 0xFF);
 
 	//myval += 1000;
 	readIndex &= MASK;
@@ -238,25 +278,11 @@ void do_work( void )
 	signed short temp = 0;
 	signed short input = 0;
 	signed short output = 0;
-	static int deciCount = 1;
-
-	static signed short deci_y1 = 0;
-	static signed short deci_y2 = 0;
 
 	float num;
 	float denom;
 	float interp;
 	float out;
-
-	static signed short prevIn_1 = 0;
-	static signed short prevIn2_1 = 0;
-	static signed short prevOut_1 = 0;
-	static signed short prevOut2_1 = 0;
-
-	static signed short prevIn_2 = 0;
-	static signed short prevIn2_2 = 0;
-	static signed short prevOut_2 = 0;
-	static signed short prevOut2_2 = 0;
 
 	// Check if we are not too far ahead
 	if ( processingCounter < interruptCounter + MAX_LOOKAHEAD )
@@ -334,30 +360,39 @@ void do_work( void )
 					if (i == 0)
 					{
 						out = b_1[0]*input + b_1[1]*prevIn_1 + b_1[2]*prevIn2_1 - a_1[1]*prevOut_1 - a_1[2]*prevOut2_1;
-						output += (signed short) out;
+
 						prevIn2_1 = prevIn_1; //& 0x9FFF;
 						prevIn_1 = input; //& 0x9FFF;
 
 						prevOut2_1 = prevOut_1; //& 0x9FFF;
-						prevOut_1 = output;//& 0x9FFF;
+						prevOut_1 = (signed short) out;//& 0x9FFF;
+
+						output += prevOut_1 >> 1;
+
 					} else
 					{
 						out = b_2[0]*input + b_2[1]*prevIn_2 + b_2[2]*prevIn2_2 - a_2[1]*prevOut_2 - a_2[2]*prevOut2_2;
-						output += (signed short) out;
+
 						prevIn2_2 = prevIn_2; //& 0x9FFF;
 						prevIn_2 = input; //& 0x9FFF;
 
 						prevOut2_2 = prevOut_2; //& 0x9FFF;
-						prevOut_2 = output;//& 0x9FFF;
-					}
+						prevOut_2 = (signed short) out;//& 0x9FFF;
 
+						output += prevOut_2 >> 1;
+					}
 					break;
+
 				case EFFECT_DELAY:
-					//output = input + delayAmount * //buffer_pop( &inBuf );
+					output += ((signed short)(input + delayAmount * delayBuf[delayReadIndex++])) << 1;
+					delayReadIndex &= DELAY_MASK;
 					break;
+
 				case EFFECT_ECHO:
-					//output = input + echoAmount * //buffer_pop( &outBuf );
+					output += ((signed short)(input + echoAmount * delayBuf[delayReadIndex++])) << 1;
+					delayReadIndex &= DELAY_MASK;
 					break;
+
 				case EFFECT_DECI_BIT:
 					num = deci_y2 - deci_y1;
 					denom = ((float)deciCount)/effectParam[i][1];
@@ -377,30 +412,37 @@ void do_work( void )
 					output += ((input/effectParam[i][0]) * effectParam[i][0]) >> 2; //crush
 
 					break;
+
 				case EFFECT_BITWISE:
-					output += ((input & effectParam[i][0]) | effectParam[i][1]);
+					output += ((input & effectParam[i][0]) | effectParam[i][1]) >> 1;
+					break;
+
+				case EFFECT_NONE:
+					output += output >> 1; //one effect is applied
 					break;
 				default:
-					output += input >> 2;
+					output += input >> 1; //theres nothing applied at all
 			}
 
 		}
+
+		if (effects[0] == EFFECT_DELAY || effects[1] == EFFECT_DELAY)
+		{
+			delayBuf[delayWriteIndex++] = input;
+			delayWriteIndex &= DELAY_MASK;
+		} else if (effects[0] == EFFECT_ECHO || effects[1] == EFFECT_ECHO)
+		{
+			delayBuf[delayWriteIndex++] = output;
+			delayWriteIndex &= DELAY_MASK;
+		}
+		//output = input;
 
 		// Save output for echo
 		//buffer_push( &outBuf, output );
 
 		outputBuf[writeIndex++] = output;
-
-
-
 		writeIndex &= MASK;
-
 		processingCounter++;
-
-
-
-
-
 	}
 }
 
