@@ -5,15 +5,6 @@ public enum Action {
 		public String toString() {
 			return "No Action";
 		}
-	},
-	EFFECT_ONE_TOGGLE(1) {
-		public String toString() {
-			return "Effect One";
-		}
-	}, EFFECT_TWO_TOGGLE(2) {
-		public String toString() {
-			return "Effect Two";
-		}
 	};
 	
 	private final int index;
@@ -24,4 +15,11 @@ public enum Action {
 	public int getIndex() {
 		return this.index;
 	}
+	
+	public static Action enumFromIndex( int index )
+	{
+		return NO_ACTION;
+	}
+	
+	
 }

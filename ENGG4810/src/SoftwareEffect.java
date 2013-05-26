@@ -1,10 +1,10 @@
 
 public abstract class SoftwareEffect {
 	
-	public abstract byte[] apply( byte[] bytes );
+	public abstract byte[] apply( byte[] bytes, int bytesLength );
 	
-	protected short[] toShort( byte[] bytes ) {
-		short[] shorts = new short[bytes.length / 2];
+	protected short[] toShort( byte[] bytes, int bytesLength ) {
+		short[] shorts = new short[bytesLength / 2];
 		for( int i = 0; i < shorts.length; ++i )
 		{
 			short lower = (short)(((short)bytes[i*2])&0x00FF);

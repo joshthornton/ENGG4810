@@ -1,23 +1,19 @@
 public class BitCrusher extends SoftwareEffect {
 	
-	private int numBits;
+	private int num;
 	
-	public BitCrusher( int numBits ) {
-		this.numBits = numBits;
+	public BitCrusher( int num ) {
+		this.num = num;
 	}
 
-	public byte[] apply(byte[] bytes) {
+	public byte[] apply(byte[] bytes, int bytesLength ) {
 		
 		// Get shorts
-		short[] in = toShort(bytes);
-		
-		// Add clipping
-		for( int i = 0; i < in.length; ++i )
-			in[i] = (short)((((short)(in[i] << 2) >> 2)&0x7FFF)|(0x8000&in[i]));
+		short[] in = toShort(bytes, bytesLength);
 		
 		// Add bit crushing
 		for( int i = 0; i < in.length; ++i )
-			in[i] = (short)(((short)in[i] >> (numBits-1)) << (numBits-1));
+			in[i] = (short)( (in[i] / num) * num );
 		
 		// Convert back in place
 		return fromShort( in );

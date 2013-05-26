@@ -14,7 +14,7 @@ public class TrackPanel extends JPanel {
 	private Track[] tracks;
 	
 	public TrackPanel() {
-		this.setPreferredSize( new Dimension( 600, 800 ) );
+		this.setPreferredSize( new Dimension( 600, 802 ) );
 		this.setBorder( BorderFactory.createLineBorder( Color.BLACK ) );
 		this.setBackground( Color.white );
 		
@@ -23,7 +23,7 @@ public class TrackPanel extends JPanel {
 		tracks = new Track[16];
 		for ( int i = 0; i < tracks.length; ++i )
 		{
-			tracks[i] = new Track();
+			tracks[i] = new Track( i + 1 );
 			this.add( tracks[i] );
 		}
 	}
@@ -31,7 +31,13 @@ public class TrackPanel extends JPanel {
 	public void writeData( File[] f ) throws IOException
 	{
 		for ( int i = 0; i < 16; ++i )
-			tracks[i].writeData( f[i] );
+			tracks[ Configuration.BOARD_MAPPING[i] ].writeData( f[i] );
+	}
+	
+	public void readData( File[] f ) throws IOException
+	{
+		for ( int i = 0; i < 16; ++i )
+			tracks[ Configuration.BOARD_MAPPING[i] ].readData( f[i] );
 	}
 
 }

@@ -31,10 +31,10 @@ public class PitchShift extends SoftwareEffect {
 		return out;
 	}
 
-	public byte[] apply(byte[] bytes) {
+	public byte[] apply(byte[] bytes, int bytesLength ) {
 		
 		// Get shorts
-		short[] in = toShort(bytes);
+		short[] in = toShort(bytes, bytesLength );
 		short[] out;
 		if ( factor < 0 )
 			out = down( in, -factor );

@@ -3,21 +3,18 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 
 public class MainFrame extends JFrame {
@@ -38,6 +35,7 @@ public class MainFrame extends JFrame {
 	
 	public MainFrame() {
 		
+		setName( "ENGG4810 Group 27" );
 		setTitle( "ENGG4810 Group 27" );
 		setBounds( 100, 100, 1600, 800 );
 		setResizable(false);
@@ -64,40 +62,62 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				
 				//Creating the file chooser popup
-				JFileChooser fileChooser = new JFileChooser(".");
-				
-				//Ensuring only .for files can be opened
-				fileChooser.setAcceptAllFileFilterUsed(false);
-				
-				//Ensuring only formulas are opened
-				fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(
-						"Configurations", new String[] {"engg4810"}));
+				final JFileChooser fileChooser = new JFileChooser();
 				
 				//Displaying the file chooser
+				fileChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
 			    int status = fileChooser.showOpenDialog(that);
 			    
 			    if (status == JFileChooser.APPROVE_OPTION) {
-			    	try {
-				    	File selectedFile = fileChooser.getSelectedFile();
-				    	FileReader reader = null;
-				    	try {
-				    		 reader = new FileReader( selectedFile );
-				    	} catch ( FileNotFoundException ex ) {
-				    		throw new InvalidFileException( ex );
-				    	}
-				    	JsonReader jsonReader = new JsonReader( reader );
-				    	Gson gson = new Gson();
-				    	config = gson.fromJson( jsonReader, Configuration.class );
-				    	buttons.updateConfig( config );
-				    	redraw();
-			    	} catch (InvalidFileException ex) {
-			    		
-			    		JOptionPane.showMessageDialog(that,
-							    ex.getMessage(),
-							    "Error",
-							    JOptionPane.ERROR_MESSAGE);
-			    		
-			    	}
+			    	
+			    	final JDialog dialog = new JDialog( that, "Please Wait", false );
+			    	JPanel p = new JPanel();
+			    	p.setBorder( new EmptyBorder( 20, 20, 20, 20 ) );
+			    	p.add( new JLabel( "Reading - do not disconnect." ) );
+		    		dialog.getContentPane().add( p );
+		    		dialog.pack();
+		    		dialog.setResizable( false );
+			    	dialog.setLocationRelativeTo(null);
+			    	dialog.setVisible( true );		    	
+			    	
+			    	Thread t = new Thread(new Runnable() {
+			            public void run() {
+			            	try {
+						    	
+					    		//Getting the selected file
+						    	File folder = fileChooser.getSelectedFile();
+						    	
+						    	File configFile = new File( folder.getAbsolutePath() + File.separator + "cfg.cfg" ); 
+						    	File[] buttonFiles = new File[16];
+						    	
+						    	try {
+						    		for ( int i = 0; i < 16; ++i )
+							    	{
+							    		buttonFiles[i] = new File( folder.getAbsolutePath() + File.separator + (i+1) + ".dat" );
+							    	}
+						    		config.readStructure( configFile );
+						    		tracks.readData( buttonFiles );
+							    	
+						    	} catch( IOException ex ) {
+						    		throw new InvalidFileException( ex );
+						    	}
+						    	buttons.updateConfig( config );
+						    	redraw();
+					    	} catch (InvalidFileException ex) {
+					    		
+					    		JOptionPane.showMessageDialog(that,
+									    ex.getMessage(),
+									    "Error",
+									    JOptionPane.ERROR_MESSAGE);
+					    		
+					    	}
+			            	dialog.setVisible( false );
+			            }
+			         });
+			    	t.setDaemon( true );
+			    	t.start();
+			    	
+			    	
 			    }
 				
 			}}
@@ -108,44 +128,61 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				
 				//Creating a new file listener
-				JFileChooser fileChooser = new JFileChooser(".");
+				final JFileChooser fileChooser = new JFileChooser();
 				
 				//Displaying the file chooser
 				fileChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
 			    int status = fileChooser.showSaveDialog(that);
 			    
 			    if (status == JFileChooser.APPROVE_OPTION) {
-			    	try {
-			    		
-			    		
-			    		//Getting the selected file
-				    	File folder = fileChooser.getSelectedFile();
-				    	
-				    	File configFile = new File( folder.getAbsolutePath() + "/cfg.cfg" ); 
-				    	File[] buttonFiles = new File[16];
-				    	
-				    	try {
-				    		configFile.createNewFile();
-				    		for ( int i = 0; i < 16; ++i )
-					    	{
-					    		buttonFiles[i] = new File( folder.getAbsolutePath() + "/" + (i+1) + ".dat" );
-					    		buttonFiles[i].createNewFile();
+			    	
+			    	final JDialog dialog = new JDialog( that, "Please Wait", false );
+			    	JPanel p = new JPanel();
+			    	p.setBorder( new EmptyBorder( 20, 20, 20, 20 ) );
+			    	p.add( new JLabel( "Writing - do not disconnect." ) );
+		    		dialog.getContentPane().add( p );
+		    		dialog.pack();
+		    		dialog.setResizable( false );
+			    	dialog.setLocationRelativeTo(null);
+			    	dialog.setVisible( true );		    	
+			    	
+			    	Thread t = new Thread(new Runnable() {
+			            public void run() {
+			            	try {
+					    		
+					    		//Getting the selected file
+						    	File folder = fileChooser.getSelectedFile();
+						    	
+						    	File configFile = new File( folder.getAbsolutePath() + File.separator + "cfg.cfg" ); 
+						    	File[] buttonFiles = new File[16];
+						    	
+						    	try {
+						    		configFile.createNewFile();
+						    		for ( int i = 0; i < 16; ++i )
+							    	{
+							    		buttonFiles[i] = new File( folder.getAbsolutePath() + File.separator + (i+1) + ".dat" );
+							    		buttonFiles[i].createNewFile();
+							    	}
+						    		config.writeStructConfig( configFile );
+						    		tracks.writeData( buttonFiles );
+							    	
+						    	} catch( IOException ex ) {
+						    		throw new InvalidFileException( ex );
+						    	}
+						    	
+					    	} catch (InvalidFileException ex) {
+					    		
+					    		JOptionPane.showMessageDialog(that,
+									    ex.getMessage(),
+									    "Error",
+									    JOptionPane.ERROR_MESSAGE);
+					    		
 					    	}
-				    		config.writeStructConfig( configFile );
-				    		tracks.writeData( buttonFiles );
-					    	
-				    	} catch( IOException ex ) {
-				    		throw new InvalidFileException( ex );
-				    	}
-				    	
-			    	} catch (InvalidFileException ex) {
-			    		
-			    		JOptionPane.showMessageDialog(that,
-							    ex.getMessage(),
-							    "Error",
-							    JOptionPane.ERROR_MESSAGE);
-			    		
-			    	}
+			            	dialog.setVisible( false );
+			            }
+			         });
+			    	t.setDaemon( true );
+			    	t.start();
 			    }
 				
 			}}
@@ -203,6 +240,7 @@ public class MainFrame extends JFrame {
 	
 	void redraw() {
 		buttons.redraw();
+		options.redraw();
 	}
 
 }

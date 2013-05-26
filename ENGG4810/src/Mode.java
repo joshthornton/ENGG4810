@@ -19,4 +19,15 @@ public enum Mode {
 	public int getIndex() {
 		return this.index;
 	}
+	
+	public static Mode enumFromIndex( int index )
+	{
+		switch( index )
+		{
+		case 1:
+			return LATCH;
+		default:
+			return HOLD;
+		}
+	}
 }

@@ -53,4 +53,23 @@ public enum LoopInterval {
 			return 1;
 		}
 	}
+	
+	public static LoopInterval enumFromIndex( int index )
+	{
+		switch( index )
+		{
+		case 2:
+			return TWO;
+		case 4:
+			return FOUR;
+		case 8:
+			return EIGHT;
+		case 16:
+			return SIXTEEN;
+		case 32:
+			return THIRTYTWO;
+		default:
+			return ONE;
+		}
+	}
 }

@@ -8,10 +8,10 @@ public class Delay extends SoftwareEffect {
 		this.amount = amount;
 	}
 
-	public byte[] apply(byte[] bytes) {
+	public byte[] apply(byte[] bytes, int bytesLength) {
 		
 		// Get shorts
-		short[] in = toShort(bytes);
+		short[] in = toShort(bytes, bytesLength);
 		short[] out = in.clone();
 		
 		// Add delay

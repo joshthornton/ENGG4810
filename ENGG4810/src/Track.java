@@ -1,6 +1,8 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +13,7 @@ import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 
@@ -21,7 +24,7 @@ public class Track extends JPanel {
 	private Waveform canvas;
 	Sample sample;
 	
-	public Track() {
+	public Track( int index ) {
 		
 		this.setPreferredSize( new Dimension( 600, 50 ) );
 		this.setBorder( BorderFactory.createLineBorder( Color.BLACK ) );
@@ -30,13 +33,19 @@ public class Track extends JPanel {
 		
 		// Set layout
 		this.setLayout( new BorderLayout() );
+		JPanel number = new JPanel(new GridBagLayout());
+		number.setPreferredSize( new Dimension( 30, 50 ) );
+		JLabel n = new JLabel( "" + index );
+		n.setFont( new Font("Serif", Font.BOLD, 20 ) );
+		number.add( n );
 		JPanel buttons = new JPanel();
 		buttons.setPreferredSize( new Dimension( 25, 50 ) );
 		buttons.setLayout( new GridLayout( 2, 1 ) );
-		canvas = new Waveform();
+		canvas = new Waveform( index );
 		canvas.setBorder( BorderFactory.createMatteBorder(0, 1, 0, 0, Color.BLACK ) );
-		canvas.setPreferredSize( new Dimension( 570, 50 ) );
-		this.add( buttons, BorderLayout.LINE_START );
+		canvas.setPreferredSize( new Dimension( 540, 50 ) );
+		this.add( number, BorderLayout.LINE_START );
+		this.add( buttons, BorderLayout.CENTER );
 		this.add( canvas, BorderLayout.LINE_END );
 		
 		// Add play/pause and back buttons
@@ -141,6 +150,11 @@ public class Track extends JPanel {
 	{
 		if ( sample != null )
 			sample.writeData( f );
+	}
+	
+	public void readData( File f ) throws IOException
+	{
+		sample = new Sample( f, canvas, Sample.SampleType.DAT );
 	}
 	
 }

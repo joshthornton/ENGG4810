@@ -1,3 +1,4 @@
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -8,7 +9,9 @@ import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -19,19 +22,23 @@ import javax.swing.border.EmptyBorder;
 public class OptionsPanel extends JPanel {
 	
 	private static final long serialVersionUID = 6728484959922842006L;
-	private JTextField bmp;
+	private JLabel bpm;
 	private JComboBox effectOne;
 	private JComboBox effectTwo;
 	private Configuration config;
 	private MPCEffect[] effects;
 	private OptionsPanel that;
+	private int currentOne;
+	private int currentTwo;
 	
 	public OptionsPanel( Configuration c ) {
 		
 		that = this;
 		this.config = c;
+		currentOne = 0;
+		currentTwo = 0;
 		
-		this.setPreferredSize( new Dimension( 1000, 200 ) );
+		this.setPreferredSize( new Dimension( 1000, 202 ) );
 		this.setBorder( BorderFactory.createLineBorder( Color.BLACK ) );
 		this.setBackground( Color.WHITE );
 		
@@ -57,27 +64,43 @@ public class OptionsPanel extends JPanel {
 		top.add( Box.createGlue() );
 		
 		// Add BPM
-		JLabel bmpName = new JLabel( "BPM: ", JLabel.LEFT );
-		left.add( bmpName );
+		JLabel bpmName = new JLabel( "BPM: ", JLabel.LEFT );
+		left.add( bpmName );
 		left.add( Box.createGlue() );
-		bmp = new JTextField( Integer.toString( config.bpm ));
-		bmp.setMaximumSize( bmp.getPreferredSize() );
-		bmp.addActionListener( new ActionListener() {
+		Box bpmBox = Box.createHorizontalBox();
+		//bpmBox.setLayout( new BorderLayout() );
+		bpm = new JLabel( Integer.toString( config.bpm ) );
+		JButton btn = new JButton( "Set" );
+		//bpm.setMaximumSize( bpm.getPreferredSize() );
+		btn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				try {
-					int temp = Integer.parseInt(bmp.getText());
-					config.bpm = temp;
-				} catch (NumberFormatException e) {
-					bmp.setText( Integer.toString( config.bpm ));
-					JOptionPane.showMessageDialog(that,
-						    e.getMessage(),
-						    "Error",
-						    JOptionPane.ERROR_MESSAGE);
-				}
-				
+				JTextField bpmfield = new JTextField( Integer.toString( config.bpm ) );
+				final JComponent[] inputs = new JComponent[] {
+						new JLabel("BPM:"),
+						bpmfield
+				};
+				if ( JOptionPane.showConfirmDialog(null, inputs, "BPM", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
+					try {
+						int temp = Integer.parseInt( bpmfield.getText() );
+						if ( temp < 10 || temp > 240 )
+							throw new RuntimeException( "BPM must be a number between 10 and 240." );
+						config.bpm = temp;
+						that.bpm.setText( Integer.toString( config.bpm ) );
+					} catch ( Exception ex ) {
+						JOptionPane.showMessageDialog( that,
+							    ex.getMessage(),
+							    "BPM Error",
+							    JOptionPane.ERROR_MESSAGE);
+					}
+				}	
 			}
 		});
-		right.add( bmp );
+		bpmBox.add( Box.createGlue() );
+		bpmBox.add( bpm );
+		bpmBox.add( Box.createGlue() );
+		bpmBox.add( btn, BorderLayout.LINE_END );
+		bpmBox.add( Box.createGlue() );
+		right.add( bpmBox );
 		right.add( Box.createGlue() );
 		
 		// Effects strings
@@ -93,7 +116,17 @@ public class OptionsPanel extends JPanel {
 		effectOne = new JComboBox( strings );
 		effectOne.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				config.effectOne = effects[effectOne.getSelectedIndex()];
+				if ( (config.effectTwo == MPCEffect.ECHO || config.effectTwo == MPCEffect.DELAY) && ( effects[effectOne.getSelectedIndex()] == MPCEffect.ECHO ||  effects[effectOne.getSelectedIndex()] == MPCEffect.DELAY ) )
+				{
+					JOptionPane.showMessageDialog( that,
+						    "Cannot select delay and echo at the same time",
+						    "Effect Error",
+						    JOptionPane.ERROR_MESSAGE);
+					effectOne.setSelectedIndex( currentOne );
+				} else {
+					config.effectOne = effects[effectOne.getSelectedIndex()];
+					currentOne = effectOne.getSelectedIndex();
+				}
 			}
 		});
 		right.add( effectOne );
@@ -105,11 +138,30 @@ public class OptionsPanel extends JPanel {
 		effectTwo = new JComboBox( strings );
 		effectTwo.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				config.effectTwo = effects[effectTwo.getSelectedIndex()];
+				if ( (config.effectOne == MPCEffect.ECHO || config.effectOne == MPCEffect.DELAY) && ( effects[effectTwo.getSelectedIndex()] == MPCEffect.ECHO ||  effects[effectTwo.getSelectedIndex()] == MPCEffect.DELAY ) )
+				{
+					JOptionPane.showMessageDialog( that,
+						    "Cannot select delay and echo at the same time",
+						    "Effect Error",
+						    JOptionPane.ERROR_MESSAGE);
+					effectTwo.setSelectedIndex( currentTwo );
+				} else {
+					config.effectTwo = effects[effectTwo.getSelectedIndex()];
+					currentTwo = effectTwo.getSelectedIndex();
+				}
 			}
 		});
 		right.add( effectTwo );
 		right.add( Box.createGlue() );
+	}
+	
+	public void redraw()
+	{
+		currentOne = config.effectOne.getArrIndex();
+		currentTwo = config.effectTwo.getArrIndex();
+		effectOne.setSelectedIndex( config.effectOne.getArrIndex() );
+		effectTwo.setSelectedIndex( config.effectTwo.getArrIndex() );
+		bpm.setText( Integer.toString( config.bpm ) );
 	}
 	
 }

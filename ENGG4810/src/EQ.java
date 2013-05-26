@@ -3,7 +3,7 @@ public class EQ extends SoftwareEffect {
 	private double[] gains;
 	private final static int NUM_BANDS = 10;
 	private final static int SAMPLE_RATE = 44100;
-	private final static double qualityFactor = 0.3; //1/Math.sqrt(2);
+	private final static double qualityFactor = 1/Math.sqrt(2);
 	private final static double[] bands = { 31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000 };
 	private double[][] alpha;
 	private double[][] beta;
@@ -32,8 +32,8 @@ public class EQ extends SoftwareEffect {
 		
 	}
 
-	public byte[] apply(byte[] bytes) {		
-		short[] in = toShort(bytes);
+	public byte[] apply(byte[] bytes, int bytesLength) {		
+		short[] in = toShort(bytes, bytesLength);
 		short[] out = iir( in );
 		return fromShort( out );
 	}

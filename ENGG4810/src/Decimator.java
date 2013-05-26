@@ -6,10 +6,10 @@ public class Decimator extends SoftwareEffect {
 		this.numSamples = numSamples;
 	}
 
-	public byte[] apply(byte[] bytes) {
+	public byte[] apply(byte[] bytes, int bytesLength ) {
 		
 		// Get shorts
-		short[] in = toShort(bytes);
+		short[] in = toShort(bytes, bytesLength);
 		short[] out = new short[in.length];
 		
 		for( int i = 0; i < out.length - numSamples; i+=numSamples )

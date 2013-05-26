@@ -160,19 +160,19 @@ public class TrackMenu extends JPopupMenu {
 		});
 		decimatorBitcrusher.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				JSlider bitcrusher = new JSlider(0, 8 );
+				JSlider bitcrusher = new JSlider(0, 128 );
 				bitcrusher.setValue(0);
 				JSlider decimator = new JSlider( 0, 30 );
 				decimator.setValue(0);
 				final JComponent[] inputs = new JComponent[] {
-						new JLabel("Num bits to crush (0-8):"),
+						new JLabel("Bit Crusher:"),
 						bitcrusher,
 						new JLabel("Num samples to decimate (0-30):"),
 						decimator
 				};
 				if ( JOptionPane.showConfirmDialog(null, inputs, "Decimator / Bitcrusher", JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION ) {
 					try {
-						track.bitcrusherDecimator( bitcrusher.getValue(), decimator.getValue() );
+						track.bitcrusherDecimator( bitcrusher.getValue() * 8, decimator.getValue() );
 					} catch ( Exception ex ) {
 						JOptionPane.showMessageDialog(track,
 							    ex.getMessage(),
