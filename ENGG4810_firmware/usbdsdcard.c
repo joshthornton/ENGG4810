@@ -272,6 +272,10 @@ void msc_init()
 	//
 	// Configure and enable uDMA
 	//
+
+    ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+    ROM_GPIOPinTypeUSBAnalog(GPIO_PORTD_BASE, GPIO_PIN_5 | GPIO_PIN_4);
+
 	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_UDMA);
 	SysCtlDelay(10);
 	ROM_uDMAControlBaseSet(&sDMAControlTable[0]);
@@ -283,6 +287,23 @@ void msc_init()
 	g_ulIdleTimeout = 0;
 	g_ulFlags = 0;
 	g_eMSCState = MSC_DEV_DISCONNECTED;
+
+	//
+	// Set the USB stack mode to Device mode with VBUS monitoring.
+	//
+	USBStackModeSet(0, USB_MODE_DEVICE, 0);
+
+	//
+	// Pass our device information to the USB library and place the device
+	// on the bus.
+	//
+	USBDMSCInit(0, (tUSBDMSCDevice *)&g_sMSCDevice);
+
+	//
+	// Determine whether or not an SDCard is installed.  If not, print a
+	// warning and have the user install one and restart.
+	//
+	disk_initialize(0);
 
 
 }

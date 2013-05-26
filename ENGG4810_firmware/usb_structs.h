@@ -1,9 +1,10 @@
-//****************************************************************************
+
+
+//*****************************************************************************
 //
-// usb_structs.h - Data structures defining the composite HID mouse and CDC
-// serial USB device.
+// usb_msc_structs.h - Data structures defining the mass storage USB device.
 //
-// Copyright (c) 2010-2012 Texas Instruments Incorporated.  All rights reserved.
+// Copyright (c) 2012 Texas Instruments Incorporated.  All rights reserved.
 // Software License Agreement
 // 
 // Texas Instruments (TI) is supplying this software for use solely and
@@ -19,67 +20,34 @@
 // CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
 // DAMAGES, FOR ANY REASON WHATSOEVER.
 // 
-// This is part of revision 9453 of the EK-LM3S9D92 Firmware Package.
+// This is part of revision 9453 of the EK-LM4F232 Firmware Package.
 //
-//****************************************************************************
+//*****************************************************************************
 
-#ifndef __USB_STRUCTS_H__
-#define __USB_STRUCTS_H__
+#ifndef __USB_MSC_STRUCTS_H__
+#define __USB_MSC_STRUCTS_H__
 
-//****************************************************************************
+//*****************************************************************************
 //
-// Globals used by both classes.
+// The mass storage class device structure.
 //
-//****************************************************************************
+//*****************************************************************************
+
+#define FLAG_CONNECTED         1
+
+//extern const tUSBDMSCDevice g_sMSCDevice;
 extern volatile unsigned long g_ulFlags;
 extern volatile unsigned long g_ulSysTickCount;
 
-//****************************************************************************
+//*****************************************************************************
 //
-// The flags used by this application for the g_ulFlags value.
+// The externally provided mass storage class event call back function.
 //
-//****************************************************************************
-#define FLAG_MOVE_UPDATE       0
-#define FLAG_CONNECTED         1
-#define FLAG_LED_ACTIVITY      2
-#define FLAG_MOVE_MOUSE        3
-#define FLAG_COMMAND_RECEIVED  4
-
-//****************************************************************************
-//
-// The size of the transmit and receive buffers used for the redirected UART.
-// This number should be a power of 2 for best performance.  256 is chosen
-// pretty much at random though the buffer should be at least twice the size
-// of a maximum-sized USB packet.
-//
-//****************************************************************************
-#define UART_BUFFER_SIZE 256
-
-extern void MouseInit(void);
-extern void MouseMain(void);
-
-extern void SerialInit(void);
-extern void SerialMain(void);
-void CommandPrint(const char *pcStr);
-
-//****************************************************************************
-//
-// CDC device callback function prototypes.
-//
-//****************************************************************************
-extern unsigned long RxHandler(void *pvCBData, unsigned long ulEvent,
-                        unsigned long ulMsgValue, void *pvMsgData);
-extern unsigned long TxHandler(void *pvCBData, unsigned long ulEvent,
-                        unsigned long ulMsgValue, void *pvMsgData);
-extern unsigned long EventHandler(void *pvCBData, unsigned long ulEvent,
-                             unsigned long ulMsgValue, void *pvMsgData);
-extern unsigned long MouseHandler(void *pvCBData, unsigned long ulEvent,
-                                  unsigned long ulMsgData, void *pvMsgData);
-extern unsigned long SerialHandler(void *pvCBData, unsigned long ulEvent,
-                                   unsigned long ulMsgValue, void *pvMsgData);
-                                   
+//*****************************************************************************
 extern unsigned long USBDMSCEventCallback(void *pvCBData, unsigned long ulEvent,
                                        unsigned long ulMsgParam,
                                        void *pvMsgData);
+
+
 
 #endif

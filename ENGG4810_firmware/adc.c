@@ -23,7 +23,7 @@
 // Create global symbol
 unsigned char adcValues[4];
 
-#define FREQ 100
+#define FREQ 2
 
 
 void adc_init(void)
@@ -78,9 +78,21 @@ void adc_interrupt(void)
 	ADCSequenceDataGet(ADC0_BASE, 1, temp);
 	ADCIntClear(ADC0_BASE, 1);
 
+	/*
+	 * 3
+	 * 2
+	 * 1
+	 * 0
+	 */
+
+	for (i = 0; i < 4; i++)
+	{
+		//need to shift them down first
+		temp[i] = temp[i] >> 5; // 7-bit number (128 steps)
+	}
 	for ( i = 0; i < 4; i++ )
 	{
-		temp[i] = temp[i] >> 5; // 7-bit number (128 steps)
+
 		if (temp[i] > (adcValues[i] + 2) || temp[i] < (adcValues[i] - 2)) // temp[i] != adcValues[i] )
 		{
 			if ( i <= 2 ) // Effect one parameters changed
@@ -89,7 +101,7 @@ void adc_interrupt(void)
 
 			} else { // Effect two parameters changed
 
-				load_set_params(0, temp[2], temp[3]);
+				load_set_params(1, temp[2], temp[3]);
 			}
 			
 			adcValues[i] = (unsigned char)temp[i];

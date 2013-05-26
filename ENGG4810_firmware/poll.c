@@ -54,7 +54,7 @@ static const unsigned long BTN_POWER_PINS[4] = { GPIO_PIN_2, GPIO_PIN_3, GPIO_PI
 
 static const unsigned long LOOP_PERIPH = SYSCTL_PERIPH_GPIOB;
 static const unsigned long LOOP_BASE = GPIO_PORTB_BASE;
-static const unsigned long LOOP_PIN = GPIO_PIN_0;
+static const unsigned long LOOP_PIN = GPIO_PIN_1;
 
 void poll_init( void )
 {
